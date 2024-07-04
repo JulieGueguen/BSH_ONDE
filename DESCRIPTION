@@ -1,7 +1,5 @@
-Package: PRR_ONDE
-Title: Synthèse automatique des données ONDE
+Title: Test edition automatique du BSH onde pour le GE basé sur le PRR ONDE
 Version: 1.0.0
-URL: https://github.com/richaben/PRR_ONDE
 Encoding: UTF-8
 Depends: 
     R (>= 4.0)
@@ -22,6 +20,4 @@ Imports:
     webp (== 1.2.0),
     hubeau (== 0.4.1),
     ondetools (== 0.1.2)
-Remotes:
-    richaben/ondetools
 RoxygenNote: 7.2.3

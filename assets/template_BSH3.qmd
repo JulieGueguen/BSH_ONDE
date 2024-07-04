@@ -1,0 +1,237 @@
+---
+title: "Bulletin de Surveillance Hydrologique (BSH) \npour la région Grand-Est"
+author: "OFB, DR `r params$region_dr`"
+date: "Campagne du `r paste0(params$mois_campagne, '/', params$annee_campagne)`  \n rapport créé le `r format(Sys.time(), '%d %B %Y')`"
+output: 
+  word_document:
+    reference_docx: "modele_word_rapport_OFB.docx"
+params:
+  annee_campagne: NULL
+  mois_campagne: NULL
+  region_dr: NULL
+  doss_mois: NULL
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE, 
+                      message = FALSE)
+knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
+options(warn=-1)
+
+if(!require("tidyverse")) install.packages('tidyverse')
+if(!require("patchwork")) install.packages('patchwork')
+if(!require("flextable")) install.packages('flextable')
+if(!require("ggplot2")) install.packages('ggplot2')
+if(!require("magick")) install.packages('magick')
+if(!require("COGiter")) devtools::install_github("MaelTheuliere/COGiter")
+
+```
+
+\newpage
+
+
+```{=html}
+
+<style  type="text/css">
+.main-container { 
+width: 2800px !important; 
+margin-left: auto;
+margin-right: auto;
+max-width:2800px !important;
+}
+.header-panel {
+background-color: #971b72;
+}
+
+.justify {
+  text-align: justify !important
+}
+
+</style>
+
+
+```
+
+```{r var1}
+
+load(paste0(params$doss_mois,"/output/graphiques.rda"))
+load(paste0(params$doss_mois,"/data/donnees_generales.rda"))
+
+# onde_DC_usuelles <- params$onde_DC_usuelles
+
+date_campagne <- max(unique(onde_DC_usuelles$date_campagne))
+
+# rem : normalement c'est la meme que anneeAVoir mais comme ça on verif si pb ou pas
+annee_campagne <- unique(onde_DC_usuelles$Annee)
+
+mois_camapgne <- unique(onde_DC_usuelles$Mois)
+
+mois_camapgne_lib <- unique(lubridate::month(as.Date(onde_DC_usuelles$date_campagne), label = TRUE))
+
+num_semaine <- unique(lubridate::week(onde_DC_usuelles$date_campagne))
+
+
+###
+
+nbBassin <- table(onde_DC_usuelles$libelle_bassin)
+
+###
+
+couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
+                        "Ecoulement non visible" = "#ef8b36", "Observations manquantes" = "#b6b7b8")
+
+
+```
+
+::: {.justify}
+
+# INTRODUCTION
+
+L’Office français de la biodiversité (OFB) présente dans les Bulletins de Situation Hydrologique de bassin les observations collectées dans le cadre de l’Observatoire National Des Etiages (ONDE), qui vise à apporter de l’information sur l’évolution quantitative des ressources en eau sur des secteurs où le réseau de suivi traditionnel est moins dense. 
+
+
+S’il y a lieu, des éléments sur les conséquences des conditions hydro-climatiques remarquables sur les habitats et le fonctionnement des milieux aquatiques sont également présentés.
+
+
+# ETAT DE L’ECOULEMENT DANS LES COURS D’EAU
+
+## Présentation de l’observatoire ONDE
+
+Le Ministère en charge de l’Écologie a mis en œuvre en 2004 un "plan d'action sécheresse" national visant à minimiser les impacts des crises hydro-climatiques, telle que celle connue en 2003. Ce plan s'articule autour de 3 axes : anticiper la crise, améliorer la gestion de crise et lutter contre les déséquilibres demande/ressource en eau. Dans ce cadre, l’ONEMA (aujourd’hui OFB) a développé en 2004 un dispositif métropolitain d'observation des assecs : le Réseau d'Observation de Crise des Assecs (ROCA). En 2010, un travail sur l’évolution de ce réseau a été mené et a abouti en 2012 à la mise en place de l’Observatoire National Des Etiages (ONDE).
+
+Le nouvel observatoire ONDE, qui se substitue au ROCA, présente un double objectif : constituer un réseau de connaissance stable sur les étiages estivaux et être un outil d’aide à la gestion de crise. 
+
+Ainsi, le réseau de stations d’observation (minimum 30 stations par département) a été constitué pour être représentatif des situations hydrographiques de chaque département et permettre le suivi des phénomènes d’étiages estivaux, de leur fréquence d’apparition et leur intensité. Afin de renforcer la surveillance existante des milieux, les stations ONDE sont majoritairement positionnées sur des petits cours d’eau (têtes de bassins…) et doivent ainsi renseigner sur les situations hydrographiques de ces milieux non couverts par d’autres dispositifs de suivi (stations hydrométriques alimentant la banque HYDRO…).
+
+L’écoulement du cours d’eau sur chaque station est apprécié visuellement selon 3 modalités : 
+
+  - écoulement visible : station présentant un écoulement continu et visible à l'œil nu ;
+  
+  - écoulement non visible : station dont le lit est toujours en eau mais le débit est nul ;
+  
+  - assec : station où l'eau est absente sur plus de 50 % de la surface du lit mineur.
+
+La période d’activité de l’observatoire est de mai à septembre. Les observations sont prolongées au-delà de cette période si les écoulements ne sont pas revenus à une situation normale. La fréquence usuelle de suivi est une fois par mois : les observations sont réalisées au plus près du 25 de chaque mois.
+Afin de répondre aux besoins des acteurs de la gestion de la ressource en eau, particulièrement en période de crise, les observations sur le réseau de stations ONDE peuvent s'effectuer à une période différente ou à une fréquence plus soutenue.
+
+Le calcul d’un indice ONDE permet de comparer les campagnes d’observations entre elles. Il varie entre 0 (si toutes les stations sont en assec) et 10 (si toutes les stations présentent un écoulement visible). Cet indice ne pourra pas être calculé dans le cas de suivi sur un sous-échantillon de stations.
+
+Les résultats de l’observatoire ONDE sont diffusés mensuellement dans les bulletins de situation hydrologique de mai à septembre. 
+
+Pour plus d’information sur ONDE : <http://onde.eaufrance.fr/>
+
+## Situation au `r date_campagne`
+
+La 1ère  campagne d’observation du réseau ONDE pour l’année `r annee_campagne` s'est déroulée au cours de la semaine `r num_semaine` (du `r min(unique(onde_DC_usuelles$date_campagne))` au `r max(unique(onde_DC_usuelles$date_campagne))`). Elle a été réalisée par les services départementaux de l’Office français de la biodiversité. Au total, ce réseau comprend  `r nrow(onde_DC_usuelles)` stations pour la région Grand Est, réparties de la façon suivante:
+
+  - `r nbBassin[1]` pour le bassin `r names(nbBassin[1])`
+  
+  - `r nbBassin[2]` pour le bassin `r names(nbBassin[2])`
+  
+  - `r nbBassin[3]` pour le bassin `r names(nbBassin[3])`
+  
+TODO : Ajouter la carte extraite de onde.
+
+INSERER CARTE
+
+
+TODO : Ajouter le contexte hydrique du mois
+
+INSERER TEXTE
+
+
+
+```{r fig2, fig.width=10, fig.height=6}
+# figure situation ecoulement campagne annee 2024
+
+plot(plot_ecoul_anneeAVoir)
+
+```
+
+
+
+```{r var2}
+
+nb_typoNat <- df_usuel_categ_obs_3mod_region %>%
+  dplyr::filter(Mois == moisAVoir & Annee == anneeAVoir)
+
+pourc_norm <- nb_typoNat %>%
+  dplyr::filter(lib_ecoul3mod == "Ecoulement visible") %>%
+  dplyr::pull(Label_p) #%>%
+  # signif(., 4)
+
+pourc_deficit <- nb_typoNat %>%
+  filter(lib_ecoul3mod %in% c("Assec","Ecoulement non visible")) %>%
+  summarise(deficit = sum(frq)) %>%
+  pull(deficit)%>%
+  signif(., 0)
+
+```
+
+
+Pour `r annee_campagne`, à la fin du mois de `r mois_camapgne_lib` on constate que selon les modalités établies dans le cadre du réseau ONDE, `r pourc_norm` % des stations présentent une situation d'écoulement normal ("écoulement visible") et `r pourc_deficit`% une situation déficitaire ("Assec" et "écoulement non visible").
+
+
+```{r ecoul_bassin}
+
+table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
+  as.data.frame() %>%
+ flextable() %>%
+  autofit() %>%
+  theme_zebra()
+
+```
+
+
+TODO : Description selon les bassins
+
+  - X stations présentent un écoulement non visible dans le bassin Rhin-Meuse
+  
+  - X stations (dont 4 dans le bassin Rhin-Meuse et x dans le bassin Seine-Normandie) présentent un assec.
+
+## Evolution annuelle des indices départementaux d'écoulement
+
+Au niveau départemental, l'indice ONDE (Tableau 1) montre des fluctuations comprises entre 
+`r min(indice_onde_DC_usuelles$indice, na.rm = TRUE)` et `r max(indice_onde_DC_usuelles$indice, na.rm = TRUE)`. 
+
+```{r indice}
+
+indice_onde_DC_usuelles %>%
+  select(code_departement, nb_sta, indice) %>%
+  flextable() %>%
+  autofit() %>%
+  theme_zebra()
+
+```
+
+## Evolution interannuelle de la situation des écoulements en Grand-Est et des indices départementaux
+
+La comparaison avec les années précédentes, semble montrer que ...
+
+INSERER TEXTE
+
+```{r}
+
+plot_ecoul_moisAVoir
+
+```
+
+En regardant du coté des notes d'indices :
+
+```{r}
+plot_indice_moisAVoir
+
+```
+
+
+
+
+
+
+:::
+<!-- fin de justification du texte -->
