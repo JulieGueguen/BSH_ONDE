@@ -33,7 +33,7 @@ rmarkdown::render("./assets/template_BSH3.qmd",
                   output_dir = doss_mois,
                   params = list(
                     annee_campagne = anneeAVoir,
-                    mois_campagne = moisAVoir,
+                    mois_campagne = lab_moisAVoir,
                     region_dr =  "Grand-Est",
                     doss_mois = dossier
                   ),
@@ -63,7 +63,7 @@ rmarkdown::render("./assets/template_BSH3.qmd",
 #                     annee_rapport = anneeAVoir,
 #                     mois_rapport = moisAVoir,
 #                     region_dr = "Grand-Est",
-#                     type_rapport = conf_libelle_type_campagne
+#                     type_rapport = "usuelle"
 #                   ),
 #                   quiet = FALSE)
 

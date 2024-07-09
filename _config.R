@@ -4,7 +4,7 @@
 #
 # Date de creation : 13/06/24
 # 
-# Date de modification : 28/06/24
+# Date de modification : 08/07/24
 #
 # Nom du script : _config.R
 #
@@ -36,7 +36,9 @@ conf_dep <- c("08","10","51","52","54","55","57","67","68","88")
 ## remarque on peut aussi passer directement par le code region
 conf_reg <- 44  # Grand-Est
 
-conf_libelle_type_campagne <- "usuelle"
+# conf_libelle_type_campagne <- "usuelle"
+# 
+# conf_selection_mois <- c("05", "06", "07", "08", "09")
 
 
 

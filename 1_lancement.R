@@ -4,7 +4,7 @@
 #
 # Date de creation : 28/06/24
 # 
-# Date de modification : 
+# Date de modification : 08/07/24
 #
 # Nom du script : 1_lancement.R
 #
@@ -30,13 +30,13 @@ source("03_preparer_data.R")
 ## creation des graphiques
 source("04_preparer_graphiques.R")
 
-## Creation du rapport detaillé pour pre-analyse
-rmarkdown::render("./quarto_preanalyse_onde.qmd",
-                  output_file = paste0("quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"),
-                  output_dir = doss_mois,
+## Creation du rapport pour pre-analyse
+quarto::quarto_render("./05_quarto_preanalyse_onde.qmd",
+                  output_file = paste0("05_quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"),
                   quiet = TRUE)
 
-
+## Creation du rapport BSH 
+source("06_generer_rapport_html.R")
 
 
 

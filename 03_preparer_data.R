@@ -4,7 +4,7 @@
 #
 # Date de creation : -
 # 
-# Date de modification : 28/06/24
+# Date de modification : 08/07/24
 #
 # Nom du script : 03_preparer_data.R
 #
@@ -66,6 +66,28 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       )
   
   
+  ############################
+  # Corriger les circonscriptions de bassin (cf fichier "bassin_stationsOnde_corrQgis.csv)
+  
+  onde_df <- onde_df %>%
+    mutate(libelle_bassin = case_when(
+      code_station == "H1130001" ~ "Seine-Normandie", # erreur -> base "Rhin-Meuse" Qgis SN
+      code_station == "B2200001" ~ "Rhin-Meuse", # erreur -> base "Seine-Normandie" Qgis Rhin-Meuse
+      code_station == "U0045006" ~ "Rhône-Méditerranée", # erreur -> base "Rhin-Meuse" Qgis RMC
+      .default = libelle_bassin))
+  
+  ############################
+  # Finalement, on va reconstruire le tableau des stations
+  
+  info_stations <- onde_df %>%
+    select("code_station","libelle_station","code_departement",       
+           "libelle_departement","code_commune","libelle_commune","code_region",              
+           "libelle_region","code_bassin","libelle_bassin",
+           "code_cours_eau", "etat_station", "onde_plus",
+           "libelle_cours_eau", "longitude", "latitude") %>%
+    distinct()
+    
+  ############################
   # Remarque : Dans le cadre des comparaisons inter-annuelle, on doit garder les
   # stations inactives. Par contre, on ne peut pas completer avec la fonction
   # automatique car les anciennes stations sont rajoutées pour les periodes recentes.
@@ -196,9 +218,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   ## remarque : Si on selectionne seulement les stations "actives" alors
   # on reviens au point de depart.
+  ############################
   
-  
-  # TODO : Corriger les circonscriptions de bassin
   
   ###########################
   ## selection des données usuelles sur toutes les annees Onde (2012 - now)
@@ -209,6 +230,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       libelle_type_campagne == "usuelle",
       Mois %in% c("05", "06", "07", "08", "09")
     )
+  
+  onde_mois_complementaire <- onde_usuelle_all %>% 
+    dplyr::filter(libelle_type_campagne == "complementaire")
   
   ## calculs assecs toute annees periode ete sur campagnes usuelles
   assecs_mois_usuel <- onde_mois_usuel %>%
@@ -266,6 +290,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   indice_onde_mois_usuel_mois <- onde_mois_usuel %>%
     fun_indice_postdf(Mois)
 
+
+  indice_onde_mois_complem_mois <- onde_mois_complementaire %>%
+    fun_indice_postdf(Mois)
   
   ###############################################
   ## selection sous tableau des dernieres campagnes (DC)
@@ -425,11 +452,12 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   #####################################
   ## Donnees Propluvia
+  ## rem : Comment est géré ce fichier ??
   load(file = './data/raw_data/propluvia_zone.Rdata')
   
-  propluvia_dpt <- propluvia_zone %>% 
-    dplyr::filter(type == 'SUP') %>% 
-    dplyr::filter(dpt %in% conf_dep)
+  # propluvia_dpt <- propluvia_zone %>% 
+  #   dplyr::filter(type == 'SUP') %>% 
+  #   dplyr::filter(dpt %in% conf_dep)
   
   ###############################################
   ## selection sous tableau de l'annee en cours
@@ -498,11 +526,15 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ) 
   
   save(
+    info_stations,
     onde_DC_usuelles,
+    # propluvia_dpt,
     indice_onde_mois_usuel_mois,
     indice_onde_DC_usuelles, # tab1 : notes d'indice pour le mois choisi par dpt
     assecs_mois_usuel,
     onde_mois_usuel,
+    indice_onde_mois_complem_mois,
+    onde_mois_complementaire,
     df_usuel_categ_obs_4mod,
     df_usuel_categ_obs_3mod,
     df_usuel_categ_obs_4mod_region,
