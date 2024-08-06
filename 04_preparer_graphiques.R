@@ -4,7 +4,7 @@
 #
 # Date de creation : -
 # 
-# Date de modification : 28/06/24
+# Date de modification : 06/08/24 - print fin script
 #
 # Nom du script : .R
 #
@@ -38,6 +38,17 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   
   ## Conditions d'écoulement lors des campagnes usuelles de l'année en cours
+#' Title
+#'
+#' @param data_bilan 
+#' @param lib_ecoulement 
+#' @param regional 
+#' @param modalites 
+#'
+#' @return
+#' @export
+#'
+#' @examples
   plot_bilan_prop <- function(data_bilan, lib_ecoulement, regional = FALSE, modalites = ggplot2::waiver()) {
     data_bilan %>% 
       
@@ -104,6 +115,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       )
   }
   
+  # bilan des ecoulements selon 3 modalites
   bilan_cond_reg_typo_nat <- plot_bilan_prop(
     df_usuel_categ_obs_3mod_region %>% 
       dplyr::filter(Annee == anneeAVoir) %>%
@@ -113,6 +125,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     modalites = c("Donnée manquante", "Observation impossible", "Assec", "Ecoulement non visible", "Ecoulement visible")
   )
   
+  # bilan des ecoulements selon les 4 modalites
   bilan_cond_reg_typo_dep <- plot_bilan_prop(
     df_usuel_categ_obs_4mod_region %>% 
       dplyr::filter(Annee == anneeAVoir) %>%
@@ -123,6 +136,15 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   )
   
   ## Des assecs qui se suivent
+#' Title
+#'
+#' @param df_assecs 
+#' @param round_prec 
+#'
+#' @return
+#' @export
+#'
+#' @examples
   plot_assecs_consecutifs <- function(df_assecs, round_prec = 1) {
     df_assecs %>%
       dplyr::ungroup() %>% 
@@ -170,8 +192,10 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       ggplot2::xlab(NULL)
   }
   
+  # assec consecutifs au niveau regional
   assecs_consecutifs_reg <- plot_assecs_consecutifs(duree_assecs_df_usuel)
   
+  # assec consecutifs au niveau departemental
   assecs_consecutifs_dep <- conf_dep %>% 
     purrr::map(
       function(d) {
@@ -193,7 +217,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::geom_text(ggplot2::aes(label = ifelse(NB > 0, NB, "")), vjust = -1, color = "black",
                        position = ggplot2::position_dodge(0.9), size=3.5) +
     ggplot2::scale_fill_manual(values = mes_couleurs_3mod, drop = TRUE, name = "") +
-    # ggplot2::ylim(c(0, nrow(dataCampagne))) +
+    ggplot2::ylim(c(0, max(data_barplot_ecoul_AnneeRecente$NB) + 5)) +
     ggplot2::labs(x = "Mois des campagnes usuelles", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
                   title = paste0("Situation des typologies nationales d'écoulement pour la région Grand Est - Campagne ", 
@@ -232,6 +256,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   names(dose.labs) <- c("08", "10" ,"51", "52", "54", "55", "57", "67", "68", "88")
   
   # ancien tableau 2
+  
   plot_indice_moisAVoir <- ggplot2::ggplot(data_plot_indice_interAnnee, 
                                            ggplot2::aes(x = Annee, y = indice)) +
     ggplot2::geom_path(color = "grey") +
@@ -253,7 +278,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
                    strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
                    strip.background = ggplot2::element_rect(fill = "white"),
                    legend.box = "vertical",
-                   legend.position = c(0.5, 0.1))
+                   legend.position = c(0.5, 0.05))
   
   
   ## Sauvegarde
@@ -266,6 +291,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     plot_indice_moisAVoir,
     file = paste0(doss_mois, "/output/graphiques.rda")
   )
+  
+  print("Fin de la creation des graphiques")
 }
 
 rm(list= ls())

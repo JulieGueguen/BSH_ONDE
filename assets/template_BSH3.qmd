@@ -69,7 +69,7 @@ load(paste0(params$doss_mois,"/data/donnees_generales.rda"))
 
 # onde_DC_usuelles <- params$onde_DC_usuelles
 
-date_campagne <- max(unique(onde_DC_usuelles$date_campagne))
+date_campagne <- max(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE)
 
 # rem : normalement c'est la meme que anneeAVoir mais comme ça on verif si pb ou pas
 annee_campagne <- unique(onde_DC_usuelles$Annee)
@@ -139,9 +139,9 @@ Les résultats de l’observatoire ONDE sont diffusés mensuellement dans les bu
 
 Pour plus d’information sur ONDE : <http://onde.eaufrance.fr/>
 
-## Situation au `r date_campagne`
+## Situation au `r format(date_campagne, "%d/%m/%y")`
 
-La 1ère  campagne d’observation du réseau ONDE pour l’année `r annee_campagne` s'est déroulée au cours de la semaine `r num_semaine` (du `r min(unique(onde_DC_usuelles$date_campagne))` au `r max(unique(onde_DC_usuelles$date_campagne))`). 
+La Xème  campagne d’observation du réseau ONDE pour l’année `r annee_campagne` s'est déroulée au cours de la semaine `r num_semaine` (du `r format(min(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")` au `r format(max(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")`). 
 
 Elle a été réalisée par les services départementaux de l’Office français de la biodiversité.
 
@@ -153,14 +153,14 @@ Au total, ce réseau comprend  `r nrow(onde_DC_usuelles)` stations pour la régi
   
   - `r nbBassin[3]` pour le bassin `r names(nbBassin[3])`
   
-TODO : Ajouter la carte extraite de onde.
-
---- INSERER CARTE ---
 
 
-TODO : Ajouter le contexte hydrique du mois
+--- TODO : Ajouter la carte extraite de onde ---
 
---- INSERER TEXTE ---
+<!-- Rappel : pour creer la carte sur onde : faire apparaitre la couche departement, selectionner les modalites d'écoulements, campagne usuelle, 4 modalites, imprimer, image -->
+
+
+--- TODO : Ajouter le contexte hydrique du mois ---
 
 
 ```{r fig2, fig.width=10, fig.height=6}
@@ -179,7 +179,7 @@ nb_typoNat <- df_usuel_categ_obs_3mod_region %>%
 
 pourc_norm <- nb_typoNat %>%
   dplyr::filter(lib_ecoul3mod == "Ecoulement visible") %>%
-  summarise(normal = sum(frq))
+  summarise(normal = sum(frq)) %>%
   dplyr::pull(normal) #%>%
   # signif(., 4)
 
@@ -206,6 +206,10 @@ as.data.frame.matrix() %>%
 ```
 
 
+
+--- separation tableaux ---
+
+
 ```{r ecoul_bassin}
 
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
@@ -217,14 +221,9 @@ table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
 
 ```
 
---- INSERER TEXTE ---
 
-TODO : Description selon les bassins
+--- TODO : Description selon les bassins ---
 
-  - X stations présentent un écoulement non visible dans le bassin Rhin-Meuse
-  
-  - X stations (dont 4 dans le bassin Rhin-Meuse et x dans le bassin Seine-Normandie) présentent un assec.
-  
 
 ## Evolution annuelle des indices départementaux d'écoulement
 
@@ -243,7 +242,7 @@ Au niveau départemental, l'indice ONDE (Tableau 1) montre des fluctuations comp
 `r min(indice_onde_DC_usuelles$indice, na.rm = TRUE)` et `r max(indice_onde_DC_usuelles$indice, na.rm = TRUE)`.
 `r sum(onde_DC_usuelles$lib_ecoul3mod =="Assec")` stations sont en assec et impactes donc les notes d'indices.
 
---- INSERER TEXTE ---
+--- INSERER TEXTE description notes indices ---
 
 ```{r indice}
 
@@ -280,6 +279,7 @@ plot_indice_moisAVoir
 
 ```
 
+--- Graphique valable a la fin de la saison usuelle, à supprimer sinon ---
 
 Le graphique ci-dessous illustre la durée des assecs pour les stations de la région sur la période estivale (de mai à septembre inclus). 
 

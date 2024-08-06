@@ -4,7 +4,7 @@
 #
 # Date de creation : -
 # 
-# Date de modification : 08/07/24
+# Date de modification : 06/08/24 - donnees manquantes de 07/24
 #
 # Nom du script : 03_preparer_data.R
 #
@@ -100,14 +100,17 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   # Remarque 3 : Si on ne fait pas le rajout automatique, alors ce n'est plus reproductible !
   
-  # Remarque 4: En 2013, il y avait un reseau avec 307 stations "actives" (2024) et non pas 319 comme en 2024, par exemple.
+  # Remarque 4: En 2013, il y avait un reseau avec 307 stations "actives" et non pas 319 comme en 2024, par exemple.
   # elles etaient forcement actives en 2013 !
   # Est ce que pour autant, cela veut dire que les nouvelles stations pour les annees 
-  # precedentes, sont "manquantes", certaines c'est qu'elles n'existaient pas encore.
+  # precedentes, sont "manquantes", certaines c'est qu'elles n'existaient pas encore ?
+  
+  # Remarque 5 : Est ce que le plus pratique pour le suivi des changements de certaines stations, pourrait
+  # être un table de transcodage pour faire la liaison entre les stations et années ?
   
   
   # tableau des stations hors onde+ pour toutes les annees
-  onde_usuelle_all <- onde_df %>% 
+  onde_df_mise_forme <- onde_df %>% 
     dplyr::select(-c(libelle_reseau, code_type_campagne)) %>% 
     dplyr::filter(!onde_plus) %>% 
     dplyr::mutate(
@@ -135,6 +138,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       code_departement,
       etat_station
     ) %>% 
+    dplyr::mutate(Mois_campagne = lubridate::ym(paste0(Annee, Mois, sep="-")))
+  
+  onde_usuelle_all <- onde_df_mise_forme %>% 
     (function(df_temp) {
       dplyr::bind_rows(
         df_temp %>% 
@@ -147,8 +153,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       ) %>% 
         dplyr::arrange(
           Annee, Mois, dplyr::desc(libelle_type_campagne)
-        ) %>% 
-        dplyr::mutate(Mois_campagne = lubridate::ym(paste0(Annee, Mois, sep="-")))
+        )
     })
   
   zaza <- onde_usuelle_all %>%
@@ -174,10 +179,21 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::distinct() %>%
     dplyr::pull()
   
-  onde_usuelle_manquantes <- onde_usuelle_all %>%
+  stations2024 <- onde_usuelle_all %>%
+    dplyr::filter(Annee == 2024) %>%
+    dplyr::select(code_station) %>%
+    dplyr::distinct() %>%
+    dplyr::pull()
+  
+  # rem : Il semble qu'il y ai des stations en "trop", d'où la selection pour 2012 et 2013.
+  # Par contre, il reste a deteminer pourquoi on a ça, car il manque des stations en juillet 2024 pour le
+  # haut rhin et il faudrait que cela soit detecté automatiquement !
+  
+  onde_usuelle_complete <- onde_usuelle_all %>%
     ## on ajoute les dates/stations qui "manque" donc code_campagne = NA et lib_ecoul3mod = Donnees manquantes
+    ## donnees complete -> manquantes plus les faites
     tidyr::complete(
-      tidyr::nesting(code_station, libelle_station, longitude, latitude, code_departement, etat_station),
+      tidyr::nesting(code_station, libelle_station, longitude, latitude, code_departement, etat_station, libelle_bassin),
       Annee, Mois,
       fill = list(
         libelle_type_campagne = "usuelle",
@@ -191,14 +207,22 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
         lubridate::ym(paste0(Annee, Mois, sep="-")),
         Mois_campagne
       )
-    ) %>%
+    )
+  
+  # cas des annees 2012 et 2013
+  onde_usuelle_manquantes2012_2013 <- onde_usuelle_complete %>%
     # TODO : Choisir une methode plus reproductible !!
     # les donnees qui nous interessent de garder sont :
     # - les stations code_campagne == NA et les stations prelevees en 2012  pour 2012 et les stations prelevees en 2013 pour 2013
-    dplyr::filter(((is.na(code_campagne) & Mois_campagne == "2013-09-01" & code_station %in% stations2013 )) |
+    dplyr::filter(((is.na(code_campagne) & Mois_campagne == "2013-09-01" & code_station %in% stations2013)) |
                     ((is.na(code_campagne) & Mois_campagne == "2012-05-01" & code_station %in% stations2012)))
   
-  onde_usuelle_all <- dplyr::bind_rows(onde_usuelle_all, onde_usuelle_manquantes) %>%
+  ## cas de juillet 2024 : Agent arret de travail, pas d'agznt pour remplacer.
+  onde_usuelle_manquantes_2024 <- onde_usuelle_complete %>%
+    # TODO : Choisir une methode plus reproductible !!
+    dplyr::filter(is.na(code_campagne) & code_station %in% stations2024 & Mois_campagne == "2024-07-01")
+  
+  onde_usuelle_all <- dplyr::bind_rows(onde_usuelle_all, onde_usuelle_manquantes2012_2013, onde_usuelle_manquantes_2024) %>%
     dplyr::mutate(Mois = factor(Mois, levels = c("05","06","07","08","09"))) %>%
     dplyr::mutate(libelle_mois = dplyr::case_when(Mois == 5 ~ "mai",
                             Mois == 6 ~ "juin",
@@ -231,8 +255,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       Mois %in% c("05", "06", "07", "08", "09")
     )
   
-  onde_mois_complementaire <- onde_usuelle_all %>% 
-    dplyr::filter(libelle_type_campagne == "complementaire")
+  # rem : pas d'étape de correction des stations manquantes
+  onde_mois_complementaire <- onde_df_mise_forme %>% 
+    dplyr::filter(libelle_type_campagne == "complémentaire")
   
   ## calculs assecs toute annees periode ete sur campagnes usuelles
   assecs_mois_usuel <- onde_mois_usuel %>%

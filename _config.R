@@ -4,7 +4,7 @@
 #
 # Date de creation : 13/06/24
 # 
-# Date de modification : 08/07/24
+# Date de modification : 06/08/24
 #
 # Nom du script : _config.R
 #
@@ -18,9 +18,9 @@
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "06" # paste0("0",lubridate::month(Sys.Date())) # "05"
+moisAVoir <-  "07" # paste0("0",lubridate::month(Sys.Date())) # "05"
 
-lab_moisAVoir <-  "Juin" # as.character(lubridate::month(Sys.Date(), label = TRUE)) # "Mai"
+lab_moisAVoir <-  "Juillet" # as.character(lubridate::month(Sys.Date(), label = TRUE)) # "Mai"
 
 anneeAVoir <- lubridate::year(Sys.Date()) # "2024"
 
@@ -40,7 +40,8 @@ conf_reg <- 44  # Grand-Est
 # 
 # conf_selection_mois <- c("05", "06", "07", "08", "09")
 
-
+# pour forcer la mise à jour
+forcer <- FALSE # TRUE
 
 
 ##########################
@@ -63,5 +64,8 @@ dir.create(doss_mois)
 dir.create(paste0(doss_mois, "/data"))
 dir.create(paste0(doss_mois, "/output"))
 dir.create(paste0(doss_mois, "/www"))
+
+dossier <- paste0("C:/Users/julie.gueguen/Documents/3_Onde/",anneeAVoir,"/",lab_moisAVoir,"/")
+
 
 doss_engt_onde_hist <- "./../"

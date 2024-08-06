@@ -4,7 +4,7 @@
 #
 # Date de creation : 28/06/24
 # 
-# Date de modification : 08/07/24
+# Date de modification : 06/08/24
 #
 # Nom du script : 1_lancement.R
 #
@@ -12,7 +12,7 @@
 #
 # ------------------------------------
 
-# fichier de configuration des departements et creation de la sctructure
+# fichier de configuration des departements et creation de la structure
 source("_config.R")
 
 ## installation des packages
@@ -31,6 +31,7 @@ source("03_preparer_data.R")
 source("04_preparer_graphiques.R")
 
 ## Creation du rapport pour pre-analyse
+source("_config.R")
 quarto::quarto_render("./05_quarto_preanalyse_onde.qmd",
                   output_file = paste0("05_quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"),
                   quiet = TRUE)

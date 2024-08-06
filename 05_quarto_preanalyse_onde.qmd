@@ -53,7 +53,8 @@ require(tidyr, quietly = TRUE)
 require(dplyr, quietly = TRUE)
 require(ggplot2, quietly = TRUE)
 require(lubridate, quietly = TRUE)
-
+require(flextable, quietly = TRUE)
+require(tibble, quietly = TRUE)
 
 ##########
 # Lecture des fichiers ----
@@ -128,7 +129,11 @@ if(length(dpt_manquants) != 0){
 
 ```
 
+<!-- Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein des departements -->
 
+Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein des departements. Les dates des campagnes ne sont pas les vraies pour toutes les stations. Il semble que pour chaque departement, la date de campagne prise, soit la date minimum des stations. C'est dût à l'utilisation d'un tableau campagne et observation. Le tableau campagne contient une date par campagne comme il se doit mais nous fait perdre les vraies dates.
+
+Par consequent, le calcul des delta et de la date de dernier relevé est completement faux. Comment on fait ??
 
 ```{r}
 
@@ -139,7 +144,8 @@ onde_DC_usuelles %>%
   dplyr::select(code_departement, date_campagne) %>%
   dplyr::group_by(code_departement) %>%
   dplyr::summarise(maxi_date = max(date_campagne),
-                   mini_date = min(date_campagne), delta_date = max(date_campagne) - min(date_campagne)) %>%
+                   mini_date = min(date_campagne), 
+  delta_date = max(date_campagne) - min(date_campagne)) %>%
   dplyr::ungroup()
 
 ### Nombre de typologie d'écoulement
@@ -295,7 +301,7 @@ fig_nbAssec_O6_an <- ggplot2::ggplot(data = data_annee_assec_06, aes(x = reorder
   theme(text = element_text(size = 12),
         axis.text = element_text(size = 12))
 
-ggsave(filename = paste0(doss_mois,"/output/nbAssec_juin_annees.png"), plot = fig_nbAssec_O6_an, 
+ggsave(filename = paste0(doss_mois,"/output/nbAssec_",moisAVoir,"_annees.png"), plot = fig_nbAssec_O6_an, 
           width = 10, height = 7, device = "png")
 
 

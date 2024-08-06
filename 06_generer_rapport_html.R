@@ -26,8 +26,6 @@ source("_config.R")
 # load(paste0(doss_mois,"/output/graphiques.rda"))
 # load(paste0(doss_mois,"/data/donnees_generales.rda"))
 
-dossier <- "C:/Users/julie.gueguen/Documents/3_Onde/2024/juin/"
-
 rmarkdown::render("./assets/template_BSH3.qmd",
                   output_file = paste0("BSH_",anneeAVoir,moisAVoir,"_a_completer",".docx"),
                   output_dir = doss_mois,
