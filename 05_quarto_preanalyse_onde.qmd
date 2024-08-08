@@ -135,6 +135,8 @@ Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein de
 
 Par consequent, le calcul des delta et de la date de dernier relevé est completement faux. Comment on fait ??
 
+Il faut que les stations soient prelevees entre le 21 et le 29 du mois.
+
 ```{r}
 
 
