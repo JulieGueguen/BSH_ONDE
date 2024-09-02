@@ -71,6 +71,7 @@ couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
 
 ```
 
+
 ```{r}
 
 ######## Ecoulement ----
@@ -129,6 +130,9 @@ if(length(dpt_manquants) != 0){
 
 ```
 
+
+:::callout-warning
+
 <!-- Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein des departements -->
 
 Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein des departements. Les dates des campagnes ne sont pas les vraies pour toutes les stations. Il semble que pour chaque departement, la date de campagne prise, soit la date minimum des stations. C'est dût à l'utilisation d'un tableau campagne et observation. Le tableau campagne contient une date par campagne comme il se doit mais nous fait perdre les vraies dates.
@@ -136,9 +140,9 @@ Attention : L'utilisation d'hubeau homogeneise les dates de campagnes au sein de
 Par consequent, le calcul des delta et de la date de dernier relevé est completement faux. Comment on fait ??
 
 Il faut que les stations soient prelevees entre le 21 et le 29 du mois.
+:::
 
 ```{r}
-
 
 # calculer delta entre dept
 
@@ -149,6 +153,11 @@ onde_DC_usuelles %>%
                    mini_date = min(date_campagne), 
   delta_date = max(date_campagne) - min(date_campagne)) %>%
   dplyr::ungroup()
+
+```
+
+
+```{r}
 
 ### Nombre de typologie d'écoulement
 
@@ -201,6 +210,14 @@ as.data.frame.matrix() %>%
 
 ```
 
+```{r}
+
+## attention il y a des NA sur les libelles cours d'eau  !
+
+onde_DC_usuelles %>%
+  filter(is.na(libelle_cours_eau))
+
+```
 
 
 ```{r}
@@ -210,7 +227,7 @@ as.data.frame.matrix() %>%
 
 onde_DC_usuelles %>%
   dplyr::filter(lib_ecoul3mod == "Assec") %>%
-  dplyr::select(libelle_cours_eau, code_departement, libelle_bassin)
+  dplyr::select(libelle_station, code_departement, libelle_bassin)
 
 ## barplot par mois de la situation
 

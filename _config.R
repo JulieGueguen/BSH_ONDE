@@ -18,9 +18,17 @@
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "07" # paste0("0",lubridate::month(Sys.Date())) # "05"
+# moisAVoir <-  "08" # paste0("0",lubridate::month(Sys.Date())) # "05"
+## Dans le cas où on regarde les données du mois de lancement de l'analyse. Rarement le cas...
+## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
+moisAVoir <-  paste0("0",lubridate::month(Sys.Date()) - 1)
 
-lab_moisAVoir <-  "Juillet" # as.character(lubridate::month(Sys.Date(), label = TRUE)) # "Mai"
+# lab_moisAVoir <-  "Aout" # as.character(lubridate::month(Sys.Date(), label = TRUE)) # "Mai"
+## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
+lab_moisAVoir <- Sys.Date() %>% 
+                  lubridate::rollbackward(period("1 month")) %>%
+                  lubridate::month(., label = TRUE) %>%
+                  as.character()
 
 anneeAVoir <- lubridate::year(Sys.Date()) # "2024"
 

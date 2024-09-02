@@ -5,6 +5,7 @@ date: "Campagne du `r paste0(params$mois_campagne, '/', params$annee_campagne)` 
 output: 
   word_document:
     reference_docx: "modele_word_rapport_OFB.docx"
+  html_document:
 params:
   annee_campagne: NULL
   mois_campagne: NULL
