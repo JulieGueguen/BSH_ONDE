@@ -221,8 +221,6 @@ onde_DC_usuelles %>%
 
 
 ```{r}
-
-
 ## stations assec
 
 onde_DC_usuelles %>%
@@ -352,3 +350,31 @@ indice_onde_mois_usuel_mois %>%
 
 ```
 
+Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2012 - 2024
+
+
+```{r}
+
+indice_onde_mois_usuel_mois %>%
+  group_by(code_departement, Mois) %>%
+  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE)) %>%
+  filter(Mois == moisAVoir) %>%
+  cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+
+```
+
+
+Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2012 - 2023
+
+
+```{r}
+
+indice_onde_mois_usuel_mois %>%
+  filter(Annee != anneeAVoir) %>%
+  group_by(code_departement, Mois) %>%
+  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE))  %>%
+  filter(Mois == moisAVoir) %>%
+  cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+
+
+```

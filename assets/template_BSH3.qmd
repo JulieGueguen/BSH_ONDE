@@ -1,5 +1,6 @@
 ---
-title: "Etat de la situation au xxx \n Présentation des observations ONDE"
+title: "Etat de la situation au xxx"
+subtitle: "Présentation des observations ONDE"
 author: "OFB, DR `r params$region_dr`"
 date: "Campagne du `r paste0(params$mois_campagne, '/', params$annee_campagne)`  \n Rapport créé le `r format(Sys.time(), '%d %B %Y')`"
 output: 
@@ -150,7 +151,9 @@ Au total, ce réseau comprend `r nrow(onde_DC_usuelles)` stations pour la régio
 
 --- TODO : Ajouter le contexte hydrique du mois ---
 
-```{r fig2, fig.width=10, fig.height=6}
+Le contexte hydrique du mois de `r mois_camapgne_lib`
+
+```{r fig2, fig.width=10, fig.height=6, fig.cap="Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne xxAnneexx"}
 # figure situation ecoulement campagne annee 2024
 
 plot(plot_ecoul_anneeAVoir)
@@ -178,14 +181,15 @@ pourc_deficit <- nb_typoNat %>%
 
 Pour `r annee_campagne`, à la fin du mois de `r mois_camapgne_lib`, on constate que selon les modalités établies dans le cadre du réseau ONDE, `r pourc_norm`% des stations présentent une situation d'écoulement normal ("écoulement visible") et `r pourc_deficit`% présentent une situation déficitaire ("Assec" et "écoulement non visible").
 
-```{r}
+```{r tab1}
 
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$code_departement)  %>%
 as.data.frame.matrix() %>%
   rownames_to_column("libellé écoulement") %>%
   flextable() %>%
   autofit() %>%
-  theme_zebra()
+  theme_zebra() %>%
+  set_caption(caption = "Modalités Onde en fonction des départements du grand-Est - Situation au xx/xx/xx")
 
 ```
 
@@ -195,11 +199,28 @@ as.data.frame.matrix() %>%
 
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
   as.data.frame.matrix() %>%
-  rownames_to_column("libellé écoulement") %>%
+  tibble::rownames_to_column("libellé écoulement") %>%
+  
   flextable() %>%
   autofit() %>%
-  theme_zebra()
+  theme_zebra() %>%
+  set_caption(caption = "Modalités Onde en fonction des bassins hydrographiques du grand-Est - Situation au xx/xx/xx")
 
+```
+
+
+```{r}
+onde_DC_usuelles %>%
+    dplyr::group_by(libelle_bassin) %>% 
+    dplyr::summarise(
+      n_donnees = dplyr::n(),
+      n_assecs = length(lib_ecoul3mod[lib_ecoul3mod %in% c('Assec', "Ecoulement non visible")]),
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(
+      pourcentage_assecs = round(n_assecs / n_donnees * 100, digits = 2),
+      taille_point = sqrt(pourcentage_assecs)
+    )
 ```
 
 --- TODO : Description selon les bassins ---
@@ -231,7 +252,8 @@ indice_onde_DC_usuelles %>%
   set_header_labels(values = c("Code département","Nom département", 
   "Région", "Nombre de stations", "Note d'indice Onde")) %>%
   autofit() %>%
-  theme_zebra()
+  theme_zebra() %>%
+  set_caption(caption = "Notes des indices Onde en fonction des départements – xxMoisxx xxAnneexx")
 
 ```
 
@@ -241,7 +263,7 @@ La comparaison avec les années précédentes, semble montrer que ...
 
 --- INSERER TEXTE ---
 
-```{r fig3, fig.width=10, fig.height=6}
+```{r fig3, fig.width=10, fig.height=6, fig.cap="Diagramme présentant les situations des écoulements pour le Grand-Est Campagne de xxMoisxx (2012 - xxAnneexx)"}
 
 plot_ecoul_moisAVoir
 
@@ -251,7 +273,7 @@ En regardant du coté des notes d'indices :
 
 --- INSERER TEXTE ---
 
-```{r fig4, fig.width=10, fig.height=6}
+```{r fig4, fig.width=10, fig.height=6, fig.cap="Valeurs des indices Ondes en fonctions des années (2012 à xxAnneexx) Campagne usuelle de xxMoisxx"}
 
 plot_indice_moisAVoir
 
