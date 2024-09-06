@@ -77,7 +77,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       .default = libelle_bassin))
   
   ############################
-  # Finalement, on va reconstruire le tableau des stations
+  # Finalement, on va reconstruire le tableau des stations car j'aimerais quelques colonnes
+  # en plus par rapport a la tableau station d'hub'eau.
   
   info_stations <- onde_df %>%
     select("code_station","libelle_station","code_departement",       
@@ -93,7 +94,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   # automatique car les anciennes stations sont rajoutées pour les periodes recentes.
   # Car ce n'est pas ça que comme ça que c'était fait avant (est ce que c'est mieux ?). 
   # On considere que le reseau est "stable" en terme de nombre de stations (319 stations)
-  # et pas 331 comme cela donnerais si on complete avec complete()
+  # et pas 331 comme cela donnerait si on complete avec complete()
   
   # Remarque 2 : Dans le cas du mois de mai 2012 et septembre 2013, il manque des stations mais
   # pour autant, ce n'est pas indiqué comme des observations manquantes !
@@ -209,6 +210,41 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       )
     )
   
+  zazaComplete <- onde_usuelle_complete %>%
+    dplyr::select(Mois, Annee) %>%
+    dplyr::group_by(Mois, Annee) %>%
+    dplyr::mutate(nbStation = dplyr::n()) %>%
+    dplyr::distinct()
+  
+  table(zazaComplete)
+  
+  onde_usuelle_complete_active <- onde_usuelle_complete %>%
+    filter(etat_station == "Active") 
+  
+  stations2012act <- onde_usuelle_complete_active %>%
+    dplyr::filter(Annee == 2012) %>%
+    dplyr::select(code_station) %>%
+    dplyr::distinct() %>%
+    dplyr::pull()
+  
+  sort(setdiff(stations2012act, stations2012))
+  sort(setdiff(stations2012, stations2012act))
+  
+  ##### Remarques : Bon dans l'absolu ici c'est finalement pareil en nombre de stations.
+  # TODO : Par contre, est ce que l'on va avoir les bonnes valeurs d'écoulements.
+  # TODO : dans notre cas, on ne s'occupe pas des noms des stations mais dans l'absolu il faut verifier
+  # ce qui est mis sur les cartes d'onde.
+  
+  
+  zazaCompleteActive <- onde_usuelle_complete_active %>%
+    dplyr::select(Mois, Annee) %>%
+    dplyr::group_by(Mois, Annee) %>%
+    dplyr::mutate(nbStation = dplyr::n()) %>%
+    dplyr::distinct() 
+  
+  table(zazaCompleteActive) 
+  table(onde_usuelle_complete_active$lib_ecoul3mod)
+  
   # cas des annees 2012 et 2013
   onde_usuelle_manquantes2012_2013 <- onde_usuelle_complete %>%
     # TODO : Choisir une methode plus reproductible !!
@@ -217,7 +253,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::filter(((is.na(code_campagne) & Mois_campagne == "2013-09-01" & code_station %in% stations2013)) |
                     ((is.na(code_campagne) & Mois_campagne == "2012-05-01" & code_station %in% stations2012)))
   
-  ## cas de juillet 2024 : Agent arret de travail, pas d'agznt pour remplacer.
+  ## cas de juillet 2024 : Agent en arret de travail, pas d'agent dispo pour remplacer sa  tournée.
   onde_usuelle_manquantes_2024 <- onde_usuelle_complete %>%
     # TODO : Choisir une methode plus reproductible !!
     dplyr::filter(is.na(code_campagne) & code_station %in% stations2024 & Mois_campagne == "2024-07-01")
@@ -240,10 +276,32 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   table(zaza2)
   
-  ## remarque : Si on selectionne seulement les stations "actives" alors
-  # on reviens au point de depart.
-  ############################
+  table(onde_usuelle_all$lib_ecoul3mod)
   
+  # TODO : il faudrait verifier quelle methode a le bon nombre de modalité. Par rapport au fichier de joséphine.
+  # Le dernier fichier serait onde 2023.xls
+  
+  onde_usuelle_all %>%
+    dplyr::group_by(Mois, Annee, lib_ecoul3mod) %>%
+    dplyr::summarise(NB = dplyr::n()) %>%
+    filter(Mois == "05")
+  # Ces valeurs correspondent avec les valeurs de josephine.
+  # rem : attention pour la prr onde.
+  
+  onde_usuelle_complete_active %>%
+    dplyr::group_by(Mois, Annee, lib_ecoul3mod) %>%
+    dplyr::summarise(NB = dplyr::n()) %>%
+    filter(Mois == "05")
+  
+  ## TODO : revoir la construction initiale dans la prr_onde.
+  
+  # TODO : exemple des stations : B1200003 (station de 2019 a 2024) et B1200001 (station de 2012 a 2018). clairement les
+  # deux stations sont liees. B1200003 est probablement la remplacente de B1200001 par contre pas B1200002 elle
+  # est proche mais pas la meme (chercher contrexville dans les vosges).
+  ## faut clairement une table de transcodage, par contre comment on la gère ? Et la seul possibilité automatique
+  # est de remplir. Donc dans l'absolu on aura toujours une difference dans les chiffres.
+  # est ce que la table de transcode pourrait être sur le sandre ? referentiel site hydrometrique non ca y est pas
+  # et en plus y a pas B1200003
   
   ###########################
   ## selection des données usuelles sur toutes les annees Onde (2012 - now)
@@ -253,7 +311,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::filter(
       libelle_type_campagne == "usuelle",
       Mois %in% c("05", "06", "07", "08", "09")
-    )
+    ) # ça sert a rien c'est deja fait avant...
   
   # rem : pas d'étape de correction des stations manquantes
   onde_mois_complementaire <- onde_df_mise_forme %>% 

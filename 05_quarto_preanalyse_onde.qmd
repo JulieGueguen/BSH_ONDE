@@ -329,6 +329,46 @@ onde_mois_usuel %>%
   distinct() %>%
   nrow()
 
+## stations en vsituations deficitaires
+
+deficite_normal_anneeMois <- onde_mois_usuel %>%
+                              mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+                              levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
+                              mutate(lib_ecoul3mod = forcats::fct_collapse(lib_ecoul3mod, A_ENV = c("Assec","Ecoulement non visible"))) %>% 
+                              group_by(Annee, Mois) %>%
+                              count(lib_ecoul3mod, .drop = FALSE) %>%
+                              mutate(freq = n / sum(n) *100)
+  
+
+## ecoulement et annee pour mois selectionnee
+data_barplot_deficit_interAnnee <- deficite_normal_anneeMois %>%
+    dplyr::filter(Mois == moisAVoir) %>% 
+    dplyr::ungroup()
+
+## selection des assec
+data_annee_assecNonvisible_mois <- data_barplot_deficit_interAnnee %>%
+  filter(lib_ecoul3mod == "A_ENV")  %>%
+  arrange(n)
+
+data_annee_assecNonvisible_mois
+
+fig_nbdeficit_mois_an <- ggplot2::ggplot(data = data_annee_assecNonvisible_mois, aes(x = reorder(Annee, n), y = n)) +
+  ggplot2::geom_bar(position = position_dodge(), stat = "identity", fill = "lightblue") +
+  ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  title = paste0("Comparaison des nombres d'assec en fonction des années (",lab_moisAVoir," 2012 - 2024)")) +
+  ggplot2::geom_text(aes(label = ifelse(n > 0, n, "")), vjust = -1, color = "black",
+              position = position_dodge(0.9), size=3.5) +
+  ggplot2::scale_x_discrete(breaks  = c(2012 : 2024), labels = paste0(lab_moisAVoir," \n", c(2012 : 2024))) +
+  theme(text = element_text(size = 12),
+        axis.text = element_text(size = 12))
+
+fig_nbdeficit_mois_an
+
+ggsave(filename = paste0(doss_mois,"/output/deficit_",moisAVoir,"_annees.png"), plot = fig_nbdeficit_mois_an, 
+          width = 10, height = 7, device = "png")
+
+
 
 ```
 
@@ -357,7 +397,8 @@ Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2
 
 indice_onde_mois_usuel_mois %>%
   group_by(code_departement, Mois) %>%
-  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE)) %>%
+  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE), 
+            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE)) %>%
   filter(Mois == moisAVoir) %>%
   cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
 
@@ -372,7 +413,8 @@ Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2
 indice_onde_mois_usuel_mois %>%
   filter(Annee != anneeAVoir) %>%
   group_by(code_departement, Mois) %>%
-  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE))  %>%
+  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE),
+            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE))  %>%
   filter(Mois == moisAVoir) %>%
   cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
 
