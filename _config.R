@@ -15,22 +15,20 @@
 # https://github.com/richaben/PRR_ONDE
 # ------------------------------------
 
+if (!require("tidyverse", character.only = TRUE)) {
+  install.packages("tidyverse")
+} else {
+  require("tidyverse")
+}
+
 ##########################
 ## configuration manuelle
 
-# moisAVoir <-  "08" # paste0("0",lubridate::month(Sys.Date())) # "05"
-## Dans le cas où on regarde les données du mois de lancement de l'analyse. Rarement le cas...
-## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
-moisAVoir <-  paste0("0",lubridate::month(Sys.Date()) - 1)
+moisAVoir <-  "05" 
 
-# lab_moisAVoir <-  "Aout" # as.character(lubridate::month(Sys.Date(), label = TRUE)) # "Mai"
-## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
-lab_moisAVoir <- Sys.Date() %>% 
-                  lubridate::rollbackward(period("1 month")) %>%
-                  lubridate::month(., label = TRUE) %>%
-                  as.character()
+lab_moisAVoir <-  "Mai"
 
-anneeAVoir <- lubridate::year(Sys.Date()) # "2024"
+anneeAVoir <- "2025"
 
 
 ## configuration variables donnees
@@ -55,6 +53,24 @@ forcer <- FALSE # TRUE
 ##########################
 ## configuration auto
 
+
+### gestion des differentes dates utilisées
+
+if(!(exists("moisAVoir") & (exists("lab_moisAVoir")) & (exists("anneeAVoir")))) {
+  ## Dans le cas où on regarde les données du mois de lancement de l'analyse. Rarement le cas...
+  ## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
+  moisAVoir <-  paste0("0",lubridate::month(Sys.Date()) - 1)
+  
+  ## On lance l'analyse sur le mois precedent ! Donc on retire 1 mois !
+  lab_moisAVoir <- Sys.Date() %>%
+                    lubridate::rollbackward(period("1 month")) %>%
+                    lubridate::month(., label = TRUE) %>%
+                    as.character()
+  
+  anneeAVoir <- lubridate::year(Sys.Date()) # "2024"
+}
+
+# date de la creation du rapport
 date_jour <- as.character(format(Sys.time(),"%Y-%m-%d"))
 date_jour_heure <- as.character(format(Sys.time(),"%Y-%m-%d_%Hh%m"))
 
@@ -75,5 +91,5 @@ dir.create(paste0(doss_mois, "/www"))
 
 dossier <- paste0("C:/Users/julie.gueguen/Documents/3_Onde/",anneeAVoir,"/",lab_moisAVoir,"/")
 
-
+# dossier d'enregistrement de la compilation des données onde
 doss_engt_onde_hist <- "./../"

@@ -238,14 +238,15 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
                   title = paste0("Situation des typologies nationales d'écoulement pour la région Grand Est (",lab_moisAVoir," 2012 - 2024)")) +
-    ggplot2::scale_x_continuous(breaks  = c(2012 : 2024), labels = paste0(lab_moisAVoir," \n", c(2012 : 2024))) + # 
+    ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
+                                labels = paste0(lab_moisAVoir," \n", c(2012 : lubridate::year(Sys.Date())))) + # 
     ggplot2::theme_light() +
     ggplot2::theme(text = ggplot2::element_text(size = 12),
                    axis.text = ggplot2::element_text(size = 12))
   
   
   #### Figure 4 : Indice onde suivant les departements campagne de l'anneeAVoir pour toutes
-  ## les annees disponibles
+  ## les annees disponibles (2012- now)
   
   
   # New facet label names for dose variable
@@ -265,12 +266,14 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::facet_wrap(~code_departement, ncol = 3, 
                         labeller = ggplot2::labeller(code_departement = dose.labs)) +
     # ggplot2::scale_x_date(breaks = "1 year", date_labels = "%Y") + 
-    ggplot2::scale_x_continuous(breaks  = c(2012 : 2024), labels = c(2012 : 2024)) + 
+    ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
+                                labels = c(2012 : lubridate::year(Sys.Date()))) + 
     ggplot2::scale_y_continuous(breaks = c(0,2,4,6,8,10),limits = c(0,10)) +
-    ggplot2::scale_fill_manual(values = c("10" = "#0077B6", "B" = "#48CAE4"), name = "", labels = c("Indice = 10", "Indice < 10")) +
+    ggplot2::scale_fill_manual(values = c("10" = "#0077B6", "B" = "#48CAE4"), name = "", 
+                               labels = c("Indice = 10", "Indice < 10")) +
     ggplot2::labs(x = paste0("Années de campagnes ONDE (mois de ", lab_moisAVoir,")"), y = "Valeurs d'indice",
                   caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Notes d'indice pour les départements de la région Grand Est (", lab_moisAVoir," 2012 - 2024)")) +
+                  title = paste0("Notes d'indice pour les départements de la région Grand Est (", lab_moisAVoir," 2012 - ",lubridate::year(Sys.Date()),")")) +
     ggplot2::theme_bw() +
     ggplot2::theme(text = ggplot2::element_text(size = 12),
                    axis.text = ggplot2::element_text(size = 12),

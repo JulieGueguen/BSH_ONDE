@@ -200,7 +200,6 @@ as.data.frame.matrix() %>%
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
   as.data.frame.matrix() %>%
   tibble::rownames_to_column("libellé écoulement") %>%
-  
   flextable() %>%
   autofit() %>%
   theme_zebra() %>%

@@ -13,7 +13,7 @@
 # ------------------------------------
 
 # fichier de configuration des departements et creation de la structure
-source("_config.R")
+source("_config.R") # a remplir avant de lancement
 
 ## installation des packages
 source("00_installation_packages.R")
@@ -34,7 +34,7 @@ source("04_preparer_graphiques.R")
 source("_config.R") # on remet car il y a des rm dans les scripts precedents
 quarto::quarto_render("./05_quarto_preanalyse_onde.qmd",
                   output_file = paste0("05_quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"),
-                  quiet = TRUE)
+                  quiet = FALSE)
 
 # rem : quarto_render n'a pas de parametre output_dir. On va donc redeplacer le fichier.
 fs::file_move(paste0("05_quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"), doss_mois)

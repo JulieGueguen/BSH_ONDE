@@ -390,25 +390,27 @@ indice_onde_mois_usuel_mois %>%
 
 ```
 
-Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2012 - 2024
+Calcul des medianes et moyennes des notes d'indices du mois par departement : 2012 - 2024
 
 
-```{r}
+```{r, median 2012_2024}
 
 indice_onde_mois_usuel_mois %>%
   group_by(code_departement, Mois) %>%
   summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE), 
             mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE)) %>%
   filter(Mois == moisAVoir) %>%
-  cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+# attention, le cbind ne marche que si on a tous les dept !
+  # cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+  left_join(., indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(code_departement, indice))
 
 ```
 
 
-Calcul des mediannes et moyennes des notes d'indices du mois par departement : 2012 - 2023
+Calcul des medianes et moyennes des notes d'indices du mois par departement : 2012 - 2023
 
 
-```{r}
+```{r,  median 2012_2023}
 
 indice_onde_mois_usuel_mois %>%
   filter(Annee != anneeAVoir) %>%
@@ -416,7 +418,9 @@ indice_onde_mois_usuel_mois %>%
   summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE),
             mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE))  %>%
   filter(Mois == moisAVoir) %>%
-  cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+# attention, le cbind ne marche que si on a tous les dept !
+  # cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
+  left_join(., indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(code_departement, indice))
 
 
 ```
