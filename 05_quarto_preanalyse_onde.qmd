@@ -3,6 +3,7 @@ title: "pre-analyse onde"
 author: "Julie Guéguen"
 date: today
 title-block-banner: true
+# embed-resources: true
 format:
   html:
     toc: true

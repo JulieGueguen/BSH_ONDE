@@ -60,6 +60,9 @@ background-color: #971b72;
 </style>
 
 ```
+
+
+
 ```{r var1}
 
 load(paste0(params$doss_mois,"/output/graphiques.rda"))
@@ -87,6 +90,16 @@ nbBassin <- table(onde_DC_usuelles$libelle_bassin)
 
 couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
                         "Ecoulement non visible" = "#ef8b36", "Observations manquantes" = "#b6b7b8")
+
+couleurs_ecoulement_4mod <- c(
+    "Ecoulement visible acceptable" = "#4575b4",
+    "Ecoulement visible faible" = "#bdd7e7",
+    "Ecoulement non visible" = "#fe9929",
+    "Assec" = "#d73027",
+    "Observation impossible" = "grey50",
+    "Donnée manquante" = "grey90"
+      )
+ 
 
 info_dept <- info_stations %>%
   filter(code_station %in% onde_DC_usuelles$code_station) %>%
@@ -149,11 +162,42 @@ Au total, ce réseau comprend `r nrow(onde_DC_usuelles)` stations pour la régio
 
 <!-- Rappel : pour creer la carte sur onde : faire apparaitre la couche departement, selectionner les modalites d'écoulements, campagne usuelle, 4 modalites, imprimer, image -->
 
+```{r}
+
+geom_GE <- COGiter::departements_metro_geo %>%
+  dplyr::filter(DEP %in% conf_dep) %>%
+  sf::st_as_sfc() %>%
+  sf::st_transform(crs = 4326)
+
+```
+
+```{r, echo=FALSE}
+
+onde_DC_usuelles_sf <- onde_DC_usuelles %>% 
+  sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+carte <- ggplot(onde_DC_usuelles_sf) +
+  ggspatial::annotation_map_tile("cartolight", zoom = 8) +
+  ggplot2::geom_sf(data=geom_GE, fill = NA) +
+  ggplot2::geom_sf(aes(bg = lib_ecoul4mod), pch = 21, size = 2) +
+  ggplot2::scale_fill_manual(values = couleurs_ecoulement_4mod, name = "Observations Onde") +
+  labs(caption = glue::glue("Données Onde (OFB) \n", "Fond de carte : OpenStreetMap\n","{Sys.Date()}")) 
+
+
+```
+
+```{r carte, fig.width=10, fig.height=6, fig.cap="Carte des situations d'écoulements pour la région Grand-Est - Campagne xxAnneexx"}
+  
+carte
+
+```
+
 --- TODO : Ajouter le contexte hydrique du mois ---
 
 Le contexte hydrique du mois de `r mois_camapgne_lib`
 
 ```{r fig2, fig.width=10, fig.height=6, fig.cap="Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne xxAnneexx"}
+
 # figure situation ecoulement campagne annee 2024
 
 plot(plot_ecoul_anneeAVoir)
@@ -179,7 +223,7 @@ pourc_deficit <- nb_typoNat %>%
 
 ```
 
-Pour `r annee_campagne`, à la fin du mois de `r mois_camapgne_lib`, on constate que selon les modalités établies dans le cadre du réseau ONDE, `r pourc_norm`% des stations présentent une situation d'écoulement normal ("écoulement visible") et `r pourc_deficit`% présentent une situation déficitaire ("Assec" et "écoulement non visible").
+Pour `r annee_campagne`, à la fin du mois de `r mois_camapgne_lib`, on constate que selon les modalités établies dans le cadre du réseau ONDE, `r signif(pourc_norm,2)`% des stations présentent une situation d'écoulement normal ("écoulement visible") et `r signif(pourc_deficit,2)`% présentent une situation déficitaire ("Assec" et "écoulement non visible").
 
 ```{r tab1}
 
@@ -189,7 +233,7 @@ as.data.frame.matrix() %>%
   flextable() %>%
   autofit() %>%
   theme_zebra() %>%
-  set_caption(caption = "Modalités Onde en fonction des départements du grand-Est - Situation au xx/xx/xx")
+  set_caption(caption = paste0("Modalités Onde en fonction des départements du grand-Est - Situation au ", date_campagne))
 
 ```
 
@@ -203,10 +247,13 @@ table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
   flextable() %>%
   autofit() %>%
   theme_zebra() %>%
-  set_caption(caption = "Modalités Onde en fonction des bassins hydrographiques du grand-Est - Situation au xx/xx/xx")
+  set_caption(caption = paste0("Modalités Onde en fonction des bassins hydrographiques du grand-Est - Situation au ", date_campagne))
 
 ```
 
+--- separation tableaux ---
+
+<!-- taille point ? -->
 
 ```{r}
 onde_DC_usuelles %>%
@@ -219,7 +266,12 @@ onde_DC_usuelles %>%
     dplyr::mutate(
       pourcentage_assecs = round(n_assecs / n_donnees * 100, digits = 2),
       taille_point = sqrt(pourcentage_assecs)
-    )
+    ) %>%
+    flextable() %>%
+    autofit() %>%
+    theme_zebra() 
+
+
 ```
 
 --- TODO : Description selon les bassins ---
@@ -252,7 +304,7 @@ indice_onde_DC_usuelles %>%
   "Région", "Nombre de stations", "Note d'indice Onde")) %>%
   autofit() %>%
   theme_zebra() %>%
-  set_caption(caption = "Notes des indices Onde en fonction des départements – xxMoisxx xxAnneexx")
+  set_caption(caption = paste0("Notes des indices Onde en fonction des départements - Situation au ", date_campagne))
 
 ```
 

@@ -225,7 +225,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::theme_light() +
     ggplot2::theme(text = ggplot2::element_text(size = 12),
                    axis.text = ggplot2::element_text(size = 12)) +
-    ggplot2::scale_x_discrete(labels = paste0(c("Mai", "Juin", "Juillet", "Août", "Septembre"), "\n 2024"))
+    ggplot2::scale_x_discrete(labels = paste0(c("Mai", "Juin", "Juillet", "Août", "Septembre"),
+                                              "\n", lubridate::year(Sys.Date())))
   
   #### figure 3 : Situation des ecoulements pour le GE campagne du mois choisi
   # pour toutes les annees (2012- now)
@@ -237,7 +238,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::scale_fill_manual(values = mes_couleurs_3mod, drop = FALSE, name = "") +
     ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Situation des typologies nationales d'écoulement pour la région Grand Est (",lab_moisAVoir," 2012 - 2024)")) +
+                  title = paste0("Situation des typologies nationales d'écoulement pour la région Grand Est (",
+                                 lab_moisAVoir," 2012 - ",lubridate::year(Sys.Date()),")")) +
     ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
                                 labels = paste0(lab_moisAVoir," \n", c(2012 : lubridate::year(Sys.Date())))) + # 
     ggplot2::theme_light() +
