@@ -70,6 +70,9 @@ if (!file.exists(paste0(doss_engt_onde_hist, "onde.csv")) |
     } else {
       # on verifie que les dates soit toutes egales,
       # s'il y en a des differentes alors on met a jour.
+      # <!> s'il y a des modifications sur les classes d'écoulements depuis le dernier telechargemnt,
+      # ici ce n'est pas detecté, il faut donc faire attention à cela (cf juin 2025 par exple)
+      # TODO : Ajouter verification sur toutes les valeurs ?
       to_update <- dplyr::left_join(
         x = old_data,
         y = new_data,

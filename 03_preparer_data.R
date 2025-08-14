@@ -33,6 +33,7 @@ load("./data/raw_data/masks.Rdata")
 if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   
   # donnees onde depuis 2012 a maintenant
+  # attention gros pb ici !!
   onde_df <- read.csv(
     file = paste0(doss_engt_onde_hist, "onde.csv"),
     colClasses = "character"
@@ -163,7 +164,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::mutate(nbStation = dplyr::n()) %>%
     dplyr::distinct()
   
-  table(zaza)
+  # table(zaza)
   
   # on ajoute les stations manquantes qui ne sont pas affichees en tant que telles :
   # rajouter les stations qui sont prises en 2012 et 2013
@@ -216,7 +217,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::mutate(nbStation = dplyr::n()) %>%
     dplyr::distinct()
   
-  table(zazaComplete)
+  # table(zazaComplete)
   
   onde_usuelle_complete_active <- onde_usuelle_complete %>%
     filter(etat_station == "Active") 
@@ -242,8 +243,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::mutate(nbStation = dplyr::n()) %>%
     dplyr::distinct() 
   
-  table(zazaCompleteActive) 
-  table(onde_usuelle_complete_active$lib_ecoul3mod)
+  # table(zazaCompleteActive) 
+  # table(onde_usuelle_complete_active$lib_ecoul3mod)
   
   # cas des annees 2012 et 2013
   onde_usuelle_manquantes2012_2013 <- onde_usuelle_complete %>%
@@ -274,9 +275,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     dplyr::mutate(nbStation = dplyr::n()) %>%
     dplyr::distinct()
   
-  table(zaza2)
-  
-  table(onde_usuelle_all$lib_ecoul3mod)
+  # table(zaza2)
+  # 
+  # table(onde_usuelle_all$lib_ecoul3mod)
   
   # TODO : il faudrait verifier quelle methode a le bon nombre de modalité. Par rapport au fichier de joséphine.
   # Le dernier fichier serait onde 2023.xls

@@ -4,7 +4,7 @@
 #
 # Date de creation : 13/06/24
 # 
-# Date de modification : 06/08/24
+# Date de modification : 02/07/25
 #
 # Nom du script : _config.R
 #
@@ -24,12 +24,9 @@ if (!require("tidyverse", character.only = TRUE)) {
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "05" 
-
-lab_moisAVoir <-  "Mai"
-
+moisAVoir <-  "07" 
+lab_moisAVoir <-  "Juillet"
 anneeAVoir <- "2025"
-
 
 ## configuration variables donnees
 
@@ -43,12 +40,12 @@ conf_dep <- c("08","10","51","52","54","55","57","67","68","88")
 conf_reg <- 44  # Grand-Est
 
 # conf_libelle_type_campagne <- "usuelle"
-# 
 # conf_selection_mois <- c("05", "06", "07", "08", "09")
 
 # pour forcer la mise à jour
-forcer <- FALSE # TRUE
-
+forcer <- TRUE # FALSE
+# attention, si on ne force pas la mise à jour et qu'il y a une modification des données, il faudrait que
+# la date de mise à jour soit indiquée
 
 ##########################
 ## configuration auto
@@ -74,6 +71,7 @@ if(!(exists("moisAVoir") & (exists("lab_moisAVoir")) & (exists("anneeAVoir")))) 
 date_jour <- as.character(format(Sys.time(),"%Y-%m-%d"))
 date_jour_heure <- as.character(format(Sys.time(),"%Y-%m-%d_%Hh%m"))
 
+# mois qui nous interesse
 mois_campagneAVoir <- lubridate::ym(paste(anneeAVoir,moisAVoir,sep="-"))
 mois_campagne_jour <- lubridate::ym(paste( lubridate::year(Sys.Date()),
                                            lubridate::month(Sys.Date()),sep="-"))

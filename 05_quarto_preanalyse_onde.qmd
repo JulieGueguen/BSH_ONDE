@@ -69,7 +69,19 @@ load(paste0(doss_mois,"/data/donnees_generales.rda"))
 couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
                         "Ecoulement non visible" = "#ef8b36", "Observations manquantes" = "#b6b7b8")
 
+couleurs_ecoulement_4mod <- c(
+    "Ecoulement visible acceptable" = "#4575b4",
+    "Ecoulement visible faible" = "#bdd7e7",
+    "Ecoulement non visible" = "#fe9929",
+    "Assec" = "#d73027",
+    "Observation impossible" = "grey50",
+    "Donnée manquante" = "grey90")
 
+couleurs_ecoulement_4mod_num <- c(
+    "4" = "#4575b4",
+    "3" = "#bdd7e7",
+    "2" = "#fe9929",
+    "1" = "#d73027")
 ```
 
 
@@ -144,7 +156,6 @@ Il faut que les stations soient prelevees entre le 21 et le 29 du mois.
 :::
 
 ```{r}
-
 # calculer delta entre dept
 
 onde_DC_usuelles %>%
@@ -212,7 +223,6 @@ as.data.frame.matrix() %>%
 ```
 
 ```{r}
-
 ## attention il y a des NA sur les libelles cours d'eau  !
 
 onde_DC_usuelles %>%
@@ -249,7 +259,7 @@ ggplot(data_barplot, aes(fill= lib_ecoul3mod,
   theme_light() +
   theme(text = element_text(size = 12),
         axis.text = element_text(size = 12)) +
-  scale_x_discrete(labels = paste0(c("Mai", "Juin", "Juillet", "Août", "Septembre"), "\n 2024"))
+  scale_x_discrete(labels = paste0(c("Mai", "Juin", "Juillet", "Août", "Septembre"), "\n ", anneeAVoir))
 
 plot_ecoul_anneeAVoir
 
@@ -312,16 +322,18 @@ fig_nbAssec_O6_an <- ggplot2::ggplot(data = data_annee_assec_06, aes(x = reorder
   ggplot2::geom_bar(position = position_dodge(), stat = "identity", fill = "lightblue") +
   ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Comparaison des nombres d'assec en fonction des années (",lab_moisAVoir," 2012 - 2024)")) +
+                  title = paste0("Comparaison des nombres d'assec en fonction des années (",lab_moisAVoir," 2012 - ", max(data_annee_assec_06$Annee),")")) +
   ggplot2::geom_text(aes(label = ifelse(n > 0, n, "")), vjust = -1, color = "black",
               position = position_dodge(0.9), size=3.5) +
-  ggplot2::scale_x_discrete(breaks  = c(2012 : 2024), labels = paste0(lab_moisAVoir," \n", c(2012 : 2024))) +
+  ggplot2::scale_x_discrete(breaks  = c(2012 : max(data_annee_assec_06$Annee)), 
+                            labels = paste0(lab_moisAVoir," \n", c(2012 : max(data_annee_assec_06$Annee)))) +
   theme(text = element_text(size = 12),
         axis.text = element_text(size = 12))
 
 ggsave(filename = paste0(doss_mois,"/output/nbAssec_",moisAVoir,"_annees.png"), plot = fig_nbAssec_O6_an, 
           width = 10, height = 7, device = "png")
 
+fig_nbAssec_O6_an
 
 ## il faut etre sure que les stations comparees soit les memes
 onde_mois_usuel %>%
@@ -330,7 +342,7 @@ onde_mois_usuel %>%
   distinct() %>%
   nrow()
 
-## stations en vsituations deficitaires
+## stations en situations deficitaires
 
 deficite_normal_anneeMois <- onde_mois_usuel %>%
                               mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
@@ -357,10 +369,11 @@ fig_nbdeficit_mois_an <- ggplot2::ggplot(data = data_annee_assecNonvisible_mois,
   ggplot2::geom_bar(position = position_dodge(), stat = "identity", fill = "lightblue") +
   ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Comparaison des nombres d'assec en fonction des années (",lab_moisAVoir," 2012 - 2024)")) +
+                  title = paste0("Comparaison des nombres de stations en déficit en fonction des années (",lab_moisAVoir," 2012 - ",max(data_annee_assecNonvisible_mois$Annee),")")) +
   ggplot2::geom_text(aes(label = ifelse(n > 0, n, "")), vjust = -1, color = "black",
               position = position_dodge(0.9), size=3.5) +
-  ggplot2::scale_x_discrete(breaks  = c(2012 : 2024), labels = paste0(lab_moisAVoir," \n", c(2012 : 2024))) +
+  ggplot2::scale_x_discrete(breaks  = c(2012 : max(data_annee_assecNonvisible_mois$Annee)), 
+                            labels = paste0(lab_moisAVoir," \n", c(2012 : max(data_annee_assecNonvisible_mois$Annee)))) +
   theme(text = element_text(size = 12),
         axis.text = element_text(size = 12))
 
@@ -391,7 +404,7 @@ indice_onde_mois_usuel_mois %>%
 
 ```
 
-Calcul des medianes et moyennes des notes d'indices du mois par departement : 2012 - 2024
+Calcul des médianes et moyennes des notes d'indices du mois par département : 2012 - `r max(indice_onde_mois_usuel_mois$Annee)`
 
 
 ```{r, median 2012_2024}
@@ -408,7 +421,7 @@ indice_onde_mois_usuel_mois %>%
 ```
 
 
-Calcul des medianes et moyennes des notes d'indices du mois par departement : 2012 - 2023
+Calcul des médianes et moyennes des notes d'indices du mois par département : 2012 - `r max(indice_onde_mois_usuel_mois$Annee) - 1`
 
 
 ```{r,  median 2012_2023}
@@ -425,3 +438,253 @@ indice_onde_mois_usuel_mois %>%
 
 
 ```
+
+
+### Evolution d'un mois sur l'autre
+
+#### Comparaison avec le mois precedent
+
+
+Nombre de stations pire, mieux et egales
+
+TODO : avec les bassins
+
+
+```{r}
+
+evol_m_m_1 <- onde_mois_usuel %>%
+                filter(Annee == anneeAVoir,
+                            # selection du mois n et n-1
+                        Mois  %in% c(moisAVoir, paste0("0",as.character(as.numeric(moisAVoir) - 1)))) %>%
+                        # transfo en numeros pour faire la différence
+                        mutate(lib_ecoul4mod_num = fct_recode(lib_ecoul4mod, "1" = "Assec", 
+                                                                              "2" = "Ecoulement non visible",
+                                                                              "3" = "Ecoulement visible faible",
+                                                                              "4" = "Ecoulement visible acceptable")) %>%
+                        select(code_station, libelle_cours_eau, Annee, Mois, 
+                                lib_ecoul4mod_num, code_departement, libelle_bassin,
+                                longitude, latitude)
+
+## il faut mettre le tableau en deux colonnes des mois mois n et mois n-1
+tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
+                              values_from = lib_ecoul4mod_num, values_fill = NA) %>%
+          # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
+            rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
+            rename_at(ncol(.), ~ "mois_n") %>%
+            mutate(mois_n_moins_1 = as.numeric(mois_n_moins_1),
+                  mois_n = as.numeric(mois_n),
+                  evolution = case_when(
+                  mois_n_moins_1 > mois_n ~ "Baisse",
+                  mois_n_moins_1 < mois_n ~ "Hausse",
+                  mois_n_moins_1 == mois_n ~ "Egalité",
+                  .default = "Indeterminé"),
+                  lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
+                                                                          "Ecoulement non visible" = "2",
+                                                                          "Ecoulement visible faible" = "3",
+                                                                          "Ecoulement visible acceptable" = "4"))
+
+# il faut que l'on retrouve les bonnes valeurs entre les deux tableaux.
+table(evol_m_m_1$Mois, evol_m_m_1$lib_ecoul4mod_num)
+
+table(tab_mois_courant_evolution$mois_n_moins_1)
+table(tab_mois_courant_evolution$mois_n)
+table(tab_mois_courant_evolution$lib_ecoul4mod_mois_n)
+
+## ok !
+
+table(tab_mois_courant_evolution$evolution)
+
+table(tab_mois_courant_evolution$evolution, tab_mois_courant_evolution$code_departement)
+
+table(paste(tab_mois_courant_evolution$mois_n_moins_1,"n-1"), tab_mois_courant_evolution$mois_n)
+
+data_alluvial <- tab_mois_courant_evolution %>%
+                  select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin) 
+
+data_alluvial_freq <- data_alluvial %>%
+                        group_by(libelle_bassin, mois_n_moins_1, mois_n) %>%
+                        select(mois_n_moins_1, mois_n, libelle_bassin) %>%
+                        mutate(Freq = n()) %>%
+                        distinct()
+
+
+ggplot(data = data_alluvial_freq,
+       aes(axis1 = mois_n_moins_1, axis2 = mois_n , y = Freq)) +
+  scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
+  xlab("Classes d'écoulement") +
+  geom_alluvium(aes(fill = as.factor(mois_n))) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  facet_wrap(~libelle_bassin, scales = "free_y") +
+  scale_fill_manual(values = couleurs_ecoulement_4mod_num)
+
+zaza <- as.data.frame(table(data_alluvial$mois_n_moins_1, data_alluvial$mois_n))
+
+
+library(ggalluvial)
+
+ggplot(data = zaza,
+       aes(axis1 = Var1, axis2 = Var2, y = Freq)) +
+  scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
+  xlab("Classes d'écoulement") +
+  geom_alluvium(aes(fill = Var1)) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  theme_minimal()
+
+```
+
+
+```{r}
+
+
+# comparaison avec le mois precedent 
+evol_m_m_1 <- onde_mois_usuel %>%
+                filter(Annee == anneeAVoir,
+                            # selection du mois n et n-1
+                        Mois  %in% c(paste0("0",as.character(as.numeric(moisAVoir)-2)), paste0("0",as.character(as.numeric(moisAVoir)-1)))) %>%
+                        # transfo en numeros pour faire la différence
+                        mutate(lib_ecoul4mod_num = fct_recode(lib_ecoul4mod, "1" = "Assec", 
+                                                                              "2" = "Ecoulement non visible",
+                                                                              "3" = "Ecoulement visible faible",
+                                                                              "4" = "Ecoulement visible acceptable")) %>%
+                        select(code_station, libelle_cours_eau, Annee, Mois, 
+                                lib_ecoul4mod_num, code_departement,
+                                longitude, latitude)
+
+
+## il faut mettre le tableau en deux colonnes des mois mois n et mois n-1
+tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
+                              values_from = lib_ecoul4mod_num, values_fill = NA) %>%
+          # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
+            rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
+            rename_at(ncol(.), ~ "mois_n") %>%
+            mutate(mois_n_moins_1 = as.numeric(mois_n_moins_1),
+                  mois_n = as.numeric(mois_n),
+                  evolution = case_when(
+                  mois_n_moins_1 > mois_n ~ "Baisse",
+                  mois_n_moins_1 < mois_n ~ "Hausse",
+                  mois_n_moins_1 == mois_n ~ "Egalité",
+                  .default = "Indeterminé"),
+                  lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
+                                                                          "Ecoulement non visible" = "2",
+                                                                          "Ecoulement visible faible" = "3",
+                                                                          "Ecoulement visible acceptable" = "4"))
+
+
+```
+
+
+
+
+#### fleches d'évolution
+
+Le but ici est de creer la comparaison entre le mois courant (n) et le mois precedent (n-1) pour récupérer l'évolution
+de la situation (cf cartes onde sur le site et BSE de la dreal).
+
+- Si la situation du mois n est pire alors evolution = baisse
+- Si la siuation du mois n est mieux alors hausse
+- Si la situation du mois n est égale au mois n-1 alors égalité
+- Sinon situation indeterminée
+
+Pour cela on transforme les libellés en chiffres :
+
+- visible acceptable = 4
+- visible faible = 3
+- non visible = 2
+- assec = 1
+
+
+Le but maintenant est de faire une carte avec les fleches et la couleur est la valeur du mois n
+
+[https://jtr13.github.io/cc21fall1/icons-and-symbols-in-r.html](https://jtr13.github.io/cc21fall1/icons-and-symbols-in-r.html)
+
+[https://fontawesome.com/icons/arrow-down?f=classic&s=solid](https://fontawesome.com/icons/arrow-down?f=classic&s=solid)
+
+```{r}
+
+tab_mois_courant_evolution <- tab_mois_courant_evolution %>%
+                                mutate(icon_evol = case_when(
+                                        evolution == "Baisse" ~ "\uf063",
+                                        evolution == "Hausse" ~ "\uf062",
+                                        evolution == "Egalité" ~ "\u3d",
+                                        .default = "\uf0c8"))
+
+```
+
+
+```{r}
+
+geom_GE <- COGiter::departements_metro_geo %>%
+  dplyr::filter(DEP %in% conf_dep) %>%
+  sf::st_as_sfc() %>%
+  sf::st_transform(crs = 4326)
+
+```
+
+```{r, echo=FALSE}
+
+tab_mois_courant_evolution_sf <- tab_mois_courant_evolution %>% 
+  sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
+
+ggplot(tab_mois_courant_evolution_sf) +
+  # ggspatial::annotation_map_tile("cartolight", zoom = 8) +
+  ggplot2::geom_sf(data=geom_GE, fill = NA) +
+  # ggplot2::geom_sf(aes(bg = lib_ecoul4mod), pch = 21, size = 2) +
+  ggimage::geom_icon(aes(x = sf::st_coordinates(tab_mois_courant_evolution_sf)[,1],
+                        y = sf::st_coordinates(tab_mois_courant_evolution_sf)[,2],
+                        image = icon_evol, bg = lib_ecoul4mod_mois_n)) +
+  # ggimage::geom_image()
+  # geom_text(aes(x = sf::st_coordinates(tab_mois_courant_evolution_sf)[,1],
+  #               y = sf::st_coordinates(tab_mois_courant_evolution_sf)[,2],
+  #               label = icon_evol), 
+  #            family = "Font Awesome 5 Free Solid", size = 3)  +
+  ggplot2::scale_fill_manual(values = couleurs_ecoulement_4mod, name = "Observations Onde") +
+  labs(caption = glue::glue("Données Onde (OFB) \n", "Fond de carte : OpenStreetMap\n","{Sys.Date()}")) 
+
+
+```
+
+:::callout::warning
+
+Il y a des différences de sens de fléches avec le BSE de la dreal !! Et pas forcement toutes inversées.
+
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

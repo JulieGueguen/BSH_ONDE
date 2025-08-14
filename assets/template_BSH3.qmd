@@ -158,7 +158,6 @@ Au total, ce réseau comprend `r nrow(onde_DC_usuelles)` stations pour la régio
 
 -   `r nbBassin[3]` pour le bassin `r names(nbBassin[3])`
 
---- TODO : Ajouter la carte extraite de onde ---
 
 <!-- Rappel : pour creer la carte sur onde : faire apparaitre la couche departement, selectionner les modalites d'écoulements, campagne usuelle, 4 modalites, imprimer, image -->
 
@@ -186,7 +185,7 @@ carte <- ggplot(onde_DC_usuelles_sf) +
 
 ```
 
-```{r carte, fig.width=10, fig.height=6, fig.cap="Carte des situations d'écoulements pour la région Grand-Est - Campagne xxAnneexx"}
+```{r carte, fig.width=10, fig.height=6, fig.cap=glue::glue("Carte des situations d'écoulements pour la région Grand-Est - Campagne  {params$mois_campagne} {params$annee_campagne}.")}
   
 carte
 
@@ -194,11 +193,12 @@ carte
 
 --- TODO : Ajouter le contexte hydrique du mois ---
 
+
 Le contexte hydrique du mois de `r mois_camapgne_lib`
 
-```{r fig2, fig.width=10, fig.height=6, fig.cap="Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne xxAnneexx"}
+```{r fig2, fig.width=10, fig.height=6, fig.cap = paste0("Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne ", mois_camapgne, annee_campagne)}
 
-# figure situation ecoulement campagne annee 2024
+# figure situation ecoulement campagne annee
 
 plot(plot_ecoul_anneeAVoir)
 
@@ -253,6 +253,7 @@ table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
 
 --- separation tableaux ---
 
+Ici c'est pas juste les assecs ! C'est assec et ecoulement non visible = situation déficitaires
 <!-- taille point ? -->
 
 ```{r}
@@ -265,7 +266,7 @@ onde_DC_usuelles %>%
     ) %>%
     dplyr::mutate(
       pourcentage_assecs = round(n_assecs / n_donnees * 100, digits = 2),
-      taille_point = sqrt(pourcentage_assecs)
+      # taille_point = sqrt(pourcentage_assecs)
     ) %>%
     flextable() %>%
     autofit() %>%
@@ -275,6 +276,11 @@ onde_DC_usuelles %>%
 ```
 
 --- TODO : Description selon les bassins ---
+
+
+
+TODO : On pourrais ajouter un tableau avec les hausses et baisses de catégories par rapport au mois précedent en fonction des departements et peut être des classes ? -> graphique de sankey ? https://r-graph-gallery.com/sankey-diagram.html
+(apres on aura la carte, peut être qu'il faudra quand mêm conserver ce tableeau ?)
 
 ## Evolution annuelle des indices départementaux d'écoulement
 
@@ -314,23 +320,36 @@ La comparaison avec les années précédentes, semble montrer que ...
 
 --- INSERER TEXTE ---
 
-```{r fig3, fig.width=10, fig.height=6, fig.cap="Diagramme présentant les situations des écoulements pour le Grand-Est Campagne de xxMoisxx (2012 - xxAnneexx)"}
+```{r fig3, fig.width=10, fig.height=6, fig.cap=paste0("Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne usuelle ", mois_camapgne, "(2012 - ", annee_campagne, ")")}
 
 plot_ecoul_moisAVoir
 
 ```
 
-En regardant du coté des notes d'indices :
+TODO : Comparaison statistiques du nombre d'assec entre les années.
 
---- INSERER TEXTE ---
 
-```{r fig4, fig.width=10, fig.height=6, fig.cap="Valeurs des indices Ondes en fonctions des années (2012 à xxAnneexx) Campagne usuelle de xxMoisxx"}
+
+```{r fig4, fig.width=10, fig.height=6, fig.cap = paste0("Valeurs des indices Ondes en fonctions des années pour la région Grand-Est - Campagne usuelle ", mois_camapgne, "(2012 - ", annee_campagne, ")")}
 
 plot_indice_moisAVoir
 
 ```
 
 Remarque Figure 4 : Seules les valeurs égales à 10 sont en bleu foncées. Les autres notes, mêmes si très proche de 10 seront en bleu claire.
+
+En regardant du coté des notes d'indices :
+
+--- INSERER TEXTE ---
+
+TODO : calcul de la moyenne des notes d'indice des mois à voir sur toutes les années.
+
+```{r}
+
+
+
+```
+
 
 --- Graphique valable a la fin de la saison usuelle, à supprimer sinon ---
 
@@ -348,7 +367,23 @@ assecs_consecutifs_reg
 
 # CONCLUSION
 
-La prochaine campagne usuelle au lieu autour du 25 xx `r anneeAVoir`.
+La prochaine campagne usuelle au lieu autour du 25 / `r mois_camapgne` /`r anneeAVoir`.
+
+--- INSERER TEXTE ---
+
+
+
+
+Remarque : 
+
+La lecture, la mise en forme des données,la production des graphiques et du document sont effectués via :
+
+- Le logiciel *R* version 4.4.0 [https://www.r-project.org/](https://www.r-project.org/).
+- Les *packages* suivants :`hubeau`, `ondetools`, `tidyverse`, `ggplot2` et `quarto`.
+- Windows 10 x64
+
+Les fonds de cartes proviennent de *ggspatial* (fond openstreetmap).
+
 
 :::
 

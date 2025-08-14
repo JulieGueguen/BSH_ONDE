@@ -8,7 +8,7 @@
 #
 # Nom du script : 1_lancement.R
 #
-# Description : Fichier permettant de lancer l'integralité de la chaine
+# Description : Fichier permettant de lancer l’intégralité de la chaine
 #
 # ------------------------------------
 
@@ -18,7 +18,8 @@ source("_config.R") # a remplir avant de lancement
 ## installation des packages
 source("00_installation_packages.R")
 
-## verification de la necessite de mise a jour
+## verification de la necessite de mise a jour (en fonction de ce qui est deja telechargé et enregistré 
+# sur l'ordinateur)
 source("01_verifier_maj.R")
 
 ## telechargement des données si necessaire
