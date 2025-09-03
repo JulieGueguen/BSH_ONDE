@@ -24,8 +24,8 @@ if (!require("tidyverse", character.only = TRUE)) {
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "07" 
-lab_moisAVoir <-  "Juillet"
+moisAVoir <-  "08" 
+lab_moisAVoir <-  "Aout"
 anneeAVoir <- "2025"
 
 ## configuration variables donnees
@@ -77,17 +77,17 @@ mois_campagne_jour <- lubridate::ym(paste( lubridate::year(Sys.Date()),
                                            lubridate::month(Sys.Date()),sep="-"))
 ## creation des dossiers
 
-doss_annee <- paste0("./../", anneeAVoir)
+doss_annee <- here::here("./..", anneeAVoir)
 dir.create(doss_annee)
 
-doss_mois <- paste0(doss_annee, "/", lab_moisAVoir)
+doss_mois <- here::here(doss_annee, lab_moisAVoir)
 dir.create(doss_mois)
 
-dir.create(paste0(doss_mois, "/data"))
-dir.create(paste0(doss_mois, "/output"))
-dir.create(paste0(doss_mois, "/www"))
+dir.create(here::here(doss_mois, "data"))
+dir.create(here::here(doss_mois, "output"))
+dir.create(here::here(doss_mois, "www"))
 
-dossier <- paste0("C:/Users/julie.gueguen/Documents/3_Onde/",anneeAVoir,"/",lab_moisAVoir,"/")
+dossier <- here::here(paste0("./../3_Onde/",anneeAVoir,"/",lab_moisAVoir,"/"))
 
 # dossier d'enregistrement de la compilation des données onde
 doss_engt_onde_hist <- "./../"

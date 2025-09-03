@@ -56,6 +56,7 @@ require(ggplot2, quietly = TRUE)
 require(lubridate, quietly = TRUE)
 require(flextable, quietly = TRUE)
 require(tibble, quietly = TRUE)
+require(ggalluvial)
 
 ##########
 # Lecture des fichiers ----
@@ -335,6 +336,34 @@ ggsave(filename = paste0(doss_mois,"/output/nbAssec_",moisAVoir,"_annees.png"), 
 
 fig_nbAssec_O6_an
 
+### Nombre d'assec moyen
+
+df_usuel_categ_obs_3mod %>%
+  ungroup() %>%
+  filter(Mois == moisAVoir, lib_ecoul3mod == "Assec",
+          Annee != anneeAVoir) %>%
+  summarize(ecartType = sd(NB, na.rm = TRUE), moyenne = mean(NB), 
+                  mediane = median(NB, na.rm = TRUE))
+
+df_usuel_categ_obs_3mod %>%
+  filter(Mois == moisAVoir, lib_ecoul3mod == "Assec") %>%
+  group_by(code_departement) %>%
+  summarise(ecartType = sd(NB, na.rm = TRUE), moyenne = mean(NB), 
+                  mediane = median(NB, na.rm = TRUE))
+
+df_usuel_categ_obs_3mod %>%
+  filter(Mois == moisAVoir, lib_ecoul3mod == "Assec") %>%
+  group_by(Annee) %>%
+  summarise(ecartType = sd(NB, na.rm = TRUE), moyenne = mean(NB), 
+                  mediane = median(NB, na.rm = TRUE))
+
+## pourcentages d'assecs
+df_usuel_categ_obs_3mod %>%
+  filter(Mois == moisAVoir, lib_ecoul3mod == "Assec") %>%
+  group_by(Mois, code_departement) %>%
+  summarise(ecartType = sd(frq, na.rm = TRUE), moyenne = mean(frq), 
+                  mediane = median(frq, na.rm = TRUE))
+
 ## il faut etre sure que les stations comparees soit les memes
 onde_mois_usuel %>%
   filter(Annee %in% c(2012, 2013, 2014)) %>%
@@ -385,6 +414,8 @@ ggsave(filename = paste0(doss_mois,"/output/deficit_",moisAVoir,"_annees.png"), 
 
 
 ```
+
+### Indices
 
 ```{r}
 
@@ -478,6 +509,10 @@ tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois,
                   mois_n_moins_1 < mois_n ~ "Hausse",
                   mois_n_moins_1 == mois_n ~ "Egalité",
                   .default = "Indeterminé"),
+                  lib_ecoul4mod_mois_n_moins_1 = fct_recode(as.factor(mois_n_moins_1), "Assec" = "1", 
+                                                                                            "Ecoulement non visible" = "2",
+                                                                                            "Ecoulement visible faible" = "3",
+                                                                                            "Ecoulement visible acceptable" = "4"),
                   lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
                                                                           "Ecoulement non visible" = "2",
                                                                           "Ecoulement visible faible" = "3",
@@ -496,10 +531,14 @@ table(tab_mois_courant_evolution$evolution)
 
 table(tab_mois_courant_evolution$evolution, tab_mois_courant_evolution$code_departement)
 
+table(tab_mois_courant_evolution$evolution, tab_mois_courant_evolution$libelle_bassin)
+
+
 table(paste(tab_mois_courant_evolution$mois_n_moins_1,"n-1"), tab_mois_courant_evolution$mois_n)
 
 data_alluvial <- tab_mois_courant_evolution %>%
-                  select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin) 
+                        select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin,
+                        lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) 
 
 data_alluvial_freq <- data_alluvial %>%
                         group_by(libelle_bassin, mois_n_moins_1, mois_n) %>%
@@ -507,13 +546,12 @@ data_alluvial_freq <- data_alluvial %>%
                         mutate(Freq = n()) %>%
                         distinct()
 
-
 ggplot(data = data_alluvial_freq,
        aes(axis1 = mois_n_moins_1, axis2 = mois_n , y = Freq)) +
   scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
   xlab("Classes d'écoulement") +
-  geom_alluvium(aes(fill = as.factor(mois_n))) +
-  geom_stratum() +
+  ggalluvial::geom_alluvium(aes(fill = as.factor(mois_n))) +
+  ggalluvial::geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   facet_wrap(~libelle_bassin, scales = "free_y") +
   scale_fill_manual(values = couleurs_ecoulement_4mod_num)
@@ -533,6 +571,83 @@ ggplot(data = zaza,
   theme_minimal()
 
 ```
+
+
+
+```{r}
+
+evol_m_m_1 <- onde_mois_usuel %>%
+                filter(Annee == anneeAVoir,
+                            # selection du mois n et n-1
+                        Mois  %in% c(moisAVoir, paste0("0",as.character(as.numeric(moisAVoir) - 1)))) %>%
+                        # transfo en numeros pour faire la différence
+                        mutate(lib_ecoul4mod_num = fct_recode(lib_ecoul4mod, "1" = "Assec", 
+                                                                              "2" = "Ecoulement non visible",
+                                                                              "3" = "Ecoulement visible faible",
+                                                                              "4" = "Ecoulement visible acceptable")) %>%
+                        select(code_station, libelle_cours_eau, Annee, Mois, 
+                                lib_ecoul4mod_num, code_departement, libelle_bassin,
+                                longitude, latitude)
+
+## il faut mettre le tableau en deux colonnes des mois mois n et mois n-1
+tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
+                              values_from = lib_ecoul4mod_num, values_fill = NA) %>%
+          # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
+            rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
+            rename_at(ncol(.), ~ "mois_n") %>%
+            mutate(mois_n_moins_1 = as.numeric(mois_n_moins_1),
+                  mois_n = as.numeric(mois_n),
+                  evolution = case_when(
+                  mois_n_moins_1 > mois_n ~ "Baisse",
+                  mois_n_moins_1 < mois_n ~ "Hausse",
+                  mois_n_moins_1 == mois_n ~ "Egalité",
+                  .default = "Indeterminé"),
+                  lib_ecoul4mod_mois_n_moins_1 = fct_recode(as.factor(mois_n_moins_1), "Assec" = "1", 
+                                                                                            "Ecoulement non visible" = "2",
+                                                                                            "Ecoulement visible faible" = "3",
+                                                                                            "Ecoulement visible acceptable" = "4"),
+                  lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
+                                                                          "Ecoulement non visible" = "2",
+                                                                          "Ecoulement visible faible" = "3",
+                                                                          "Ecoulement visible acceptable" = "4"))
+
+
+data_alluvial <- tab_mois_courant_evolution %>%
+                        select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin,
+                        lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) 
+
+
+data_alluvial_freq2 <- data_alluvial %>%
+                        group_by(libelle_bassin, lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) %>%
+                        select(lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n, libelle_bassin) %>%
+                        mutate(Freq = n()) %>%
+                        distinct()
+
+plot_ggalluvial_bassin <- ggplot(data = data_alluvial_freq2,
+       aes(axis1 = lib_ecoul4mod_mois_n_moins_1, axis2 = lib_ecoul4mod_mois_n , y = Freq)) +
+  scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
+  # theme_void() +
+  theme(legend.title = element_blank(), title.position="center",
+         axis.text.y = element_blank(), axis.ticks.y = element_blank()) +
+  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul4mod_mois_n))) +
+  ggalluvial::geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  facet_wrap(~libelle_bassin, scales = "free_y", ncol = 1) +
+  scale_fill_manual(values = couleurs_ecoulement_4mod) +  
+  ggplot2::labs(#x = paste("Mois", moisAVoir, "et le mois précédent"),
+                y = "Classes d'écoulements",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  title = paste0("Diagramme montrant les classements des écoulements des mois ", 
+                                  lab_moisAVoir, " (n) et du mois précedent (n-1) \n pour l'année ", anneeAVoir,
+                              " en fonction des bassins."))
+
+ggsave(filename = paste0(doss_mois,"/output/alluvial_",moisAVoir,"_",anneeAVoir,"_bassin.png"), 
+          plot = plot_ggalluvial_bassin, width = 11, height = 10, device = "png")
+
+
+```
+
+
 
 
 ```{r}

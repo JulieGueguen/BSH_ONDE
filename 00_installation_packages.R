@@ -25,7 +25,8 @@ if(system.file(package = "pak") == ""){ # le package n'est pas installé
 pkg_gh <- c("richaben/ondetools", "inrae/hubeau")
 pkg_cran <- c("tidyverse", "purrr", "sf", "mapview", "leaflet", "leaflet.extras", "ggrepel",
               "glue", "forcats", "scales", "data.table", "lubridate", "stringr", "tidyr", 
-              "ggplot2", "knitr", "rmarkdown", "htmltools", "leafem", "png", "webp", "quarto")
+              "ggplot2", "knitr", "rmarkdown", "htmltools", "leafem", "png", "webp", 
+              "quarto", "ggalluvial")
 
 try(pak::pkg_install(c(pkg_gh, pkg_cran)))
 

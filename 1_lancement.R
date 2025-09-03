@@ -30,6 +30,7 @@ source("03_preparer_data.R")
 
 ## creation des graphiques
 source("04_preparer_graphiques.R")
+# TODO : placer la creation des graphiques de la preanalyse dans le script "preparer_graphiques"
 
 ## Creation du rapport pour pre-analyse
 source("_config.R") # on remet car il y a des rm dans les scripts precedents

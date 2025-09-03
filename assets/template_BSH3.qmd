@@ -159,6 +159,8 @@ Au total, ce réseau comprend `r nrow(onde_DC_usuelles)` stations pour la régio
 -   `r nbBassin[3]` pour le bassin `r names(nbBassin[3])`
 
 
+### Cartographie de la situation
+
 <!-- Rappel : pour creer la carte sur onde : faire apparaitre la couche departement, selectionner les modalites d'écoulements, campagne usuelle, 4 modalites, imprimer, image -->
 
 ```{r}
@@ -239,6 +241,8 @@ as.data.frame.matrix() %>%
 
 --- separation tableaux ---
 
+### Bassins
+
 ```{r ecoul_bassin}
 
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
@@ -278,11 +282,158 @@ onde_DC_usuelles %>%
 --- TODO : Description selon les bassins ---
 
 
+### Comparaison avec la situation du mois précédent
+
+```{r}
+
+
+evol_m_m_1 <- onde_mois_usuel %>%
+                filter(Annee == anneeAVoir,
+                            # selection du mois n et n-1
+                        Mois  %in% c(moisAVoir, paste0("0",as.character(as.numeric(moisAVoir) - 1)))) %>%
+                        # transfo en numeros pour faire la différence
+                        mutate(lib_ecoul4mod_num = fct_recode(lib_ecoul4mod, "1" = "Assec", 
+                                                                              "2" = "Ecoulement non visible",
+                                                                              "3" = "Ecoulement visible faible",
+                                                                              "4" = "Ecoulement visible acceptable")) %>%
+                        select(code_station, libelle_cours_eau, Annee, Mois, 
+                                lib_ecoul4mod_num, code_departement, libelle_bassin,
+                                longitude, latitude)
+
+## il faut mettre le tableau en deux colonnes des mois mois n et mois n-1
+tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
+                              values_from = lib_ecoul4mod_num, values_fill = NA) %>%
+          # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
+            rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
+            rename_at(ncol(.), ~ "mois_n") %>%
+            mutate(mois_n_moins_1 = as.numeric(mois_n_moins_1),
+                  mois_n = as.numeric(mois_n),
+                  evolution = case_when(
+                  mois_n_moins_1 > mois_n ~ "Baisse",
+                  mois_n_moins_1 < mois_n ~ "Hausse",
+                  mois_n_moins_1 == mois_n ~ "Egalité",
+                  .default = "Indeterminé"),
+                  lib_ecoul4mod_mois_n_moins_1 = fct_recode(as.factor(mois_n_moins_1), "Assec" = "1", 
+                                                                                            "Ecoulement non visible" = "2",
+                                                                                            "Ecoulement visible faible" = "3",
+                                                                                            "Ecoulement visible acceptable" = "4"),
+                  lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
+                                                                          "Ecoulement non visible" = "2",
+                                                                          "Ecoulement visible faible" = "3",
+                                                                          "Ecoulement visible acceptable" = "4"))
+
+```
+
 
 TODO : On pourrais ajouter un tableau avec les hausses et baisses de catégories par rapport au mois précedent en fonction des departements et peut être des classes ? -> graphique de sankey ? https://r-graph-gallery.com/sankey-diagram.html
 (apres on aura la carte, peut être qu'il faudra quand mêm conserver ce tableeau ?)
 
+#### Tableau des baisses, hausses,... global et par bassin
+
+```{r}
+
+tab_mois_courant_evolution %>%
+  group_by(evolution) %>%
+  summarize(Nb = n()) %>%
+    flextable() %>%
+    autofit() %>%
+    theme_zebra() 
+
+
+```
+
+```{r}
+
+tab_mois_courant_evolution %>%
+  group_by(evolution, code_departement) %>%
+  summarize(Nb = n()) %>%
+  pivot_wider(names_from = code_departement,
+              values_from = c(Nb)) %>%
+    flextable() %>%
+    autofit() %>%
+    theme_zebra() 
+
+
+```
+
+
+```{r}
+
+tab_mois_courant_evolution %>%
+  group_by(evolution, libelle_bassin) %>%
+  summarize(Nb = n()) %>%
+  pivot_wider(names_from = libelle_bassin,
+              values_from = c(Nb)) %>%
+  flextable() %>%
+  autofit() %>%
+  theme_zebra() %>%
+  set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent - Situation au ", date_campagne))
+
+```
+
+:::callout-note
+
+Ce tableau présente le nombre de station en fonction de l'évolution observée de l'écoulement (baisse, égalité ou hausse) en fonction des bassins.
+Les classes d'écoulement départementales sont utilisées ici pour détarminer l'évolution.
+
+- Une station classée en "baisse" signifie que le statut de l'écoulement s'est dégrandé par rapport au mois précédent.
+- Une station classée en "hausse" signifie que le statut de l'écoulement s'est amélioré par rapport au mois précédent.
+- Une station classée en "égalité" signifie que le statut de l'écoulement est le même que le mois précédent.
+
+:::
+
+#### Diagramme sankey par bassin
+
+
+```{r}
+
+data_alluvial <- tab_mois_courant_evolution %>%
+                        select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin,
+                        lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) 
+
+
+data_alluvial_freq2 <- data_alluvial %>%
+                        group_by(libelle_bassin, lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) %>%
+                        select(lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n, libelle_bassin) %>%
+                        mutate(Freq = n()) %>%
+                        distinct()
+
+ggplot(data = data_alluvial_freq2,
+       aes(axis1 = lib_ecoul4mod_mois_n_moins_1, axis2 = lib_ecoul4mod_mois_n , y = Freq)) +
+  scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
+  # theme_void() +
+  theme(legend.title = element_blank(), title.position="center",
+         axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul4mod_mois_n))) +
+  ggalluvial::geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  facet_wrap(~libelle_bassin, scales = "free_y", ncol = 1) +
+  scale_fill_manual(values = couleurs_ecoulement_4mod) +  
+  ggplot2::labs(#x = paste("Mois", moisAVoir, "et le mois précédent"),
+                y = "Classes d'écoulements",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  title = paste0("Classements des écoulements entre le mois d'", 
+                                  lab_moisAVoir, " (n) et le mois précedent (n-1) \n pour l'année ", anneeAVoir,
+                              " en fonction des bassins."))
+
+
+```
+
+:::callout-note
+
+- Le diagramme présente les classements des écoulements observés entre le mois `r moisAVoir` (à droite) et le mois précédent (à gauche).
+- L'épaisseur des flux permet de quantifier le nombre de stations.
+- Les couleurs des flux sont celle des classes d'observations du mois `r moisAvoir`
+
+:::
+
+
+
 ## Evolution annuelle des indices départementaux d'écoulement
+
+
+:::callout-note
 
 Pour chaque campagne usuelle, un indice ONDE peut être calculé selon la formule suivante :
 
@@ -297,6 +448,9 @@ $$ avec :
 Au niveau départemental, l'indice ONDE (Tableau 2 ou 3) montre des fluctuations comprises entre `r min(indice_onde_DC_usuelles$indice, na.rm = TRUE)` et `r max(indice_onde_DC_usuelles$indice, na.rm = TRUE)`. `r sum(onde_DC_usuelles$lib_ecoul3mod =="Assec")` stations sont en assec et impactes donc les notes d'indices.
 
 [Remarque]{.underline} : Les valeurs ne peuvent pas être comparées entre les départements.
+
+:::
+
 
 --- INSERER TEXTE description notes indices ---
 
@@ -336,28 +490,48 @@ plot_indice_moisAVoir
 
 ```
 
+:::callout-note
 Remarque Figure 4 : Seules les valeurs égales à 10 sont en bleu foncées. Les autres notes, mêmes si très proche de 10 seront en bleu claire.
+:::
 
 En regardant du coté des notes d'indices :
 
 --- INSERER TEXTE ---
 
-TODO : calcul de la moyenne des notes d'indice des mois à voir sur toutes les années.
+Calcul des médianes et moyennes des notes d'indices du mois par département : 2012 - `r max(indice_onde_mois_usuel_mois$Annee) - 1`
 
-```{r}
 
+```{r,  median 2012_2023}
+
+indice_onde_mois_usuel_mois %>%
+  filter(Annee != anneeAVoir) %>%
+  group_by(code_departement, Mois) %>%
+  summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE),
+            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE))  %>%
+  filter(Mois == moisAVoir) %>%
+  left_join(., indice_onde_mois_usuel_mois %>% 
+                  filter(Annee == anneeAVoir, Mois == moisAVoir) %>% 
+                  select(code_departement, indice)) %>%
+  autofit() %>%
+  theme_zebra() %>%
+  set_caption(caption = paste0("Statistiques des notes d'indices Onde en fonction des départements - Situation au ", date_campagne))
 
 
 ```
 
 
+
 --- Graphique valable a la fin de la saison usuelle, à supprimer sinon ---
 
+:::callout-note
 Le graphique ci-dessous illustre la durée des assecs pour les stations de la région sur la période estivale (de mai à septembre inclus).
 
 La durée des assecs pour une station est calculée selon le nombre de mois consécutifs où des observations avec la [*modalité assec*]{custom-style="Assec_style"} est rapportée. La plus grande séquence d'observation en assec est gardée pour le calcul de la durée (rq. *entre observations successives, l'écoulement peut revenir visible*).
 
 Ainsi, les durées en assec peuvent aller de 0 mois (c.à.d. des écoulements toujours visibles et consécutivement observés sur la période estivale) à 5 mois (c.à.d. des assecs toujours observés sur la période estivale). Le pourcentage représenté par chaque classe de durée est calculé pour chaque année d'observation.
+
+:::
+
 
 ```{r fig5, fig.width=10, fig.height=6}
 
