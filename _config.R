@@ -87,7 +87,7 @@ dir.create(here::here(doss_mois, "data"))
 dir.create(here::here(doss_mois, "output"))
 dir.create(here::here(doss_mois, "www"))
 
-dossier <- here::here(paste0("./../3_Onde/",anneeAVoir,"/",lab_moisAVoir,"/"))
+dossier <- here::here(paste0("./../",anneeAVoir,"/",lab_moisAVoir,"/"))
 
 # dossier d'enregistrement de la compilation des données onde
 doss_engt_onde_hist <- "./../"

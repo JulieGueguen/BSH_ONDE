@@ -6,7 +6,6 @@ date: "Campagne du `r paste0(params$mois_campagne, '/', params$annee_campagne)` 
 output: 
   word_document:
     reference_docx: "modele_word_rapport_OFB.docx"
-  html_document:
 params:
   annee_campagne: NULL
   mois_campagne: NULL
@@ -61,8 +60,6 @@ background-color: #971b72;
 
 ```
 
-
-
 ```{r var1}
 
 load(paste0(params$doss_mois,"/output/graphiques.rda"))
@@ -94,6 +91,14 @@ couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
 couleurs_ecoulement_4mod <- c(
     "Ecoulement visible acceptable" = "#4575b4",
     "Ecoulement visible faible" = "#bdd7e7",
+    "Ecoulement non visible" = "#fe9929",
+    "Assec" = "#d73027",
+    "Observation impossible" = "grey50",
+    "Donnée manquante" = "grey90"
+      )
+
+couleurs_ecoulement_3mod <- c(
+    "Ecoulement visible" = "#4575b4",
     "Ecoulement non visible" = "#fe9929",
     "Assec" = "#d73027",
     "Observation impossible" = "grey50",
@@ -146,7 +151,11 @@ Pour plus d’information sur ONDE : <http://onde.eaufrance.fr/>
 
 ## Situation au `r format(date_campagne, "%d/%m/%y")`
 
-La Xème campagne d’observation du réseau ONDE pour l’année `r annee_campagne` s'est déroulée au cours de la semaine `r num_semaine` (du `r format(min(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")` au `r format(max(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")`).
+La Xème campagne usuelle d’observation du réseau ONDE pour l’année `r annee_campagne` s'est déroulée au cours de la semaine `r num_semaine` (du `r format(min(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")` au `r format(max(unique(onde_DC_usuelles$date_campagne), na.rm = TRUE), "%d/%m/%Y")`).
+
+::: {.callout-note title="History Corner"}
+fdsfs
+:::
 
 Elle a été réalisée par les services départementaux de l’Office français de la biodiversité.
 
@@ -286,23 +295,21 @@ onde_DC_usuelles %>%
 
 ```{r}
 
-
 evol_m_m_1 <- onde_mois_usuel %>%
                 filter(Annee == anneeAVoir,
                             # selection du mois n et n-1
                         Mois  %in% c(moisAVoir, paste0("0",as.character(as.numeric(moisAVoir) - 1)))) %>%
                         # transfo en numeros pour faire la différence
-                        mutate(lib_ecoul4mod_num = fct_recode(lib_ecoul4mod, "1" = "Assec", 
+                        mutate(lib_ecoul3mod_num = fct_recode(lib_ecoul3mod, "1" = "Assec", 
                                                                               "2" = "Ecoulement non visible",
-                                                                              "3" = "Ecoulement visible faible",
-                                                                              "4" = "Ecoulement visible acceptable")) %>%
+                                                                              "3" = "Ecoulement visible ")) %>%
                         select(code_station, libelle_cours_eau, Annee, Mois, 
-                                lib_ecoul4mod_num, code_departement, libelle_bassin,
+                                lib_ecoul3mod_num, code_departement, libelle_bassin,
                                 longitude, latitude)
 
 ## il faut mettre le tableau en deux colonnes des mois mois n et mois n-1
 tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
-                              values_from = lib_ecoul4mod_num, values_fill = NA) %>%
+                              values_from = lib_ecoul3mod_num, values_fill = NA) %>%
           # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
             rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
             rename_at(ncol(.), ~ "mois_n") %>%
@@ -313,22 +320,17 @@ tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois,
                   mois_n_moins_1 < mois_n ~ "Hausse",
                   mois_n_moins_1 == mois_n ~ "Egalité",
                   .default = "Indeterminé"),
-                  lib_ecoul4mod_mois_n_moins_1 = fct_recode(as.factor(mois_n_moins_1), "Assec" = "1", 
+                  lib_ecoul3mod_mois_n_moins_1 = fct_recode(as.factor(mois_n_moins_1), "Assec" = "1", 
                                                                                             "Ecoulement non visible" = "2",
-                                                                                            "Ecoulement visible faible" = "3",
-                                                                                            "Ecoulement visible acceptable" = "4"),
-                  lib_ecoul4mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
+                                                                                            "Ecoulement visible" = "3"),
+                  lib_ecoul3mod_mois_n = fct_recode(as.factor(mois_n), "Assec" = "1", 
                                                                           "Ecoulement non visible" = "2",
-                                                                          "Ecoulement visible faible" = "3",
-                                                                          "Ecoulement visible acceptable" = "4"))
+                                                                          "Ecoulement visible" = "3"))
 
 ```
 
 
-TODO : On pourrais ajouter un tableau avec les hausses et baisses de catégories par rapport au mois précedent en fonction des departements et peut être des classes ? -> graphique de sankey ? https://r-graph-gallery.com/sankey-diagram.html
-(apres on aura la carte, peut être qu'il faudra quand mêm conserver ce tableeau ?)
-
-#### Tableau des baisses, hausses,... global et par bassin
+ffsfsd
 
 ```{r}
 
@@ -337,10 +339,15 @@ tab_mois_courant_evolution %>%
   summarize(Nb = n()) %>%
     flextable() %>%
     autofit() %>%
-    theme_zebra() 
+    theme_zebra() %>%
+  set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent - Situation au ", date_campagne))
 
 
 ```
+
+
+ezaezaeza
+
 
 ```{r}
 
@@ -351,10 +358,14 @@ tab_mois_courant_evolution %>%
               values_from = c(Nb)) %>%
     flextable() %>%
     autofit() %>%
-    theme_zebra() 
+    theme_zebra() %>%
+  set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des départements - Situation au ", date_campagne))
 
 
 ```
+
+mgkfgkmfkgmfk
+
 
 
 ```{r}
@@ -367,67 +378,86 @@ tab_mois_courant_evolution %>%
   flextable() %>%
   autofit() %>%
   theme_zebra() %>%
-  set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent - Situation au ", date_campagne))
+  set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des bassins - Situation au ", date_campagne))
 
 ```
 
-:::callout-note
+gfsmgsmgsjmsgjsmg
 
+:::{.callout-note}
+Note that there are five types of callouts, including: 
+`note`, `tip`, `warning`, `caution`, and `important`.
+:::
+
+sdfsdfds
+
+:::{.callout-note}
+Note that there are five types of callouts, including:
+`note`, `warning`, `important`, `tip`, and `caution`.
+:::
+
+kgmfkgfdmgfkd
+
+:::callout-note
 Ce tableau présente le nombre de station en fonction de l'évolution observée de l'écoulement (baisse, égalité ou hausse) en fonction des bassins.
 Les classes d'écoulement départementales sont utilisées ici pour détarminer l'évolution.
 
 - Une station classée en "baisse" signifie que le statut de l'écoulement s'est dégrandé par rapport au mois précédent.
 - Une station classée en "hausse" signifie que le statut de l'écoulement s'est amélioré par rapport au mois précédent.
 - Une station classée en "égalité" signifie que le statut de l'écoulement est le même que le mois précédent.
-
 :::
 
-#### Diagramme sankey par bassin
+### Diagramme sankey par bassin
 
 
-```{r}
+```{r sankey,  fig.width=10, fig.height=12, fig.cap=paste0("Diagramme des écoulements - Campagne usuelle ", mois_camapgne, annee_campagne)}
 
 data_alluvial <- tab_mois_courant_evolution %>%
                         select(code_station, mois_n_moins_1, mois_n, evolution, libelle_bassin,
-                        lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) 
+                        lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n) 
 
 
 data_alluvial_freq2 <- data_alluvial %>%
-                        group_by(libelle_bassin, lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n) %>%
-                        select(lib_ecoul4mod_mois_n_moins_1, lib_ecoul4mod_mois_n, libelle_bassin) %>%
+                        group_by(libelle_bassin, lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n) %>%
+                        select(lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n, libelle_bassin) %>%
                         mutate(Freq = n()) %>%
                         distinct()
 
 ggplot(data = data_alluvial_freq2,
-       aes(axis1 = lib_ecoul4mod_mois_n_moins_1, axis2 = lib_ecoul4mod_mois_n , y = Freq)) +
+       aes(axis1 = lib_ecoul3mod_mois_n_moins_1, axis2 = lib_ecoul3mod_mois_n , y = Freq)) +
   scale_x_discrete(limits = c("Mois n-1", "Mois n"), expand = c(.2, .05)) +
   # theme_void() +
   theme(legend.title = element_blank(), title.position="center",
          axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         plot.title = element_text(hjust = 0.5)) +
-  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul4mod_mois_n))) +
+  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul3mod_mois_n))) +
   ggalluvial::geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   facet_wrap(~libelle_bassin, scales = "free_y", ncol = 1) +
-  scale_fill_manual(values = couleurs_ecoulement_4mod) +  
+  scale_fill_manual(values = couleurs_ecoulement_3mod) +  
   ggplot2::labs(#x = paste("Mois", moisAVoir, "et le mois précédent"),
                 y = "Classes d'écoulements",
                   caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Classements des écoulements entre le mois d'", 
-                                  lab_moisAVoir, " (n) et le mois précedent (n-1) \n pour l'année ", anneeAVoir,
-                              " en fonction des bassins."))
+                  title = paste("Classements des écoulements entre le mois d'", 
+                                  lab_moisAVoir, "(n) et le mois précedent (n-1) \n pour l'année", anneeAVoir,
+                              "en fonction des bassins."))
 
 
 ```
+
+
+sgksmgsmggmfgjmdgjdmgd
+
+sfsdfmsdfsd
+
 
 :::callout-note
 
 - Le diagramme présente les classements des écoulements observés entre le mois `r moisAVoir` (à droite) et le mois précédent (à gauche).
 - L'épaisseur des flux permet de quantifier le nombre de stations.
-- Les couleurs des flux sont celle des classes d'observations du mois `r moisAvoir`
+- Les couleurs des flux sont celle des classes d'observations du mois `r moisAVoir`
 
 :::
-
 
 
 ## Evolution annuelle des indices départementaux d'écoulement
@@ -454,7 +484,7 @@ Au niveau départemental, l'indice ONDE (Tableau 2 ou 3) montre des fluctuations
 
 --- INSERER TEXTE description notes indices ---
 
-```{r indice}
+```{r indice, fig.width=10, fig.height=6, fig.cap=paste0("Notes d'indices pour la région Grand-Est - Campagne usuelle ", mois_camapgne, annee_campagne)}
 
 indice_onde_DC_usuelles %>%
   select(code_departement, nb_sta, indice) %>%
@@ -501,7 +531,7 @@ En regardant du coté des notes d'indices :
 Calcul des médianes et moyennes des notes d'indices du mois par département : 2012 - `r max(indice_onde_mois_usuel_mois$Annee) - 1`
 
 
-```{r,  median 2012_2023}
+```{r median 2012_2023, fig.cap=paste0("Diagramme présentant les situations d'écoulement pour la région Grand-Est - Campagne usuelle ", mois_camapgne, "(2012 - ", annee_campagne, ")")}
 
 indice_onde_mois_usuel_mois %>%
   filter(Annee != anneeAVoir) %>%
@@ -512,6 +542,7 @@ indice_onde_mois_usuel_mois %>%
   left_join(., indice_onde_mois_usuel_mois %>% 
                   filter(Annee == anneeAVoir, Mois == moisAVoir) %>% 
                   select(code_departement, indice)) %>%
+  flextable() %>%
   autofit() %>%
   theme_zebra() %>%
   set_caption(caption = paste0("Statistiques des notes d'indices Onde en fonction des départements - Situation au ", date_campagne))

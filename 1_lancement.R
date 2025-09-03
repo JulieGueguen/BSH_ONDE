@@ -43,7 +43,7 @@ fs::file_move(paste0("05_quarto_preanalyse_onde_",anneeAVoir,moisAVoir,".html"),
 # il faut aussi deplacer le dossier associé a l'html, attention, il y a des dossiers imbriqués !!
 # move the file to the output path
 current_folder <- "./05_quarto_preanalyse_onde_files/"
-new_folder <- paste0(doss_mois,"/05_quarto_preanalyse_onde_files/")
+new_folder <- here::here(doss_mois,"/05_quarto_preanalyse_onde_files/")
 fs::dir_copy(current_folder, new_folder)
 fs::dir_delete(current_folder)
 
