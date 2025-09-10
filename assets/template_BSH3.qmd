@@ -29,6 +29,7 @@ if(!require("flextable")) install.packages('flextable')
 if(!require("ggplot2")) install.packages('ggplot2')
 if(!require("magick")) install.packages('magick')
 if(!require("COGiter")) devtools::install_github("MaelTheuliere/COGiter")
+if(!require("ggalluvial")) install.packages('ggalluvial')
 
 ```
 
@@ -430,7 +431,7 @@ ggplot(data = data_alluvial_freq2,
   theme(legend.title = element_blank(), title.position="center",
          axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         plot.title = element_text(hjust = 0.5)) +
-  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul3mod_mois_n))) +
+  ggalluvial::geom_alluvium(aes(fill = as.factor(lib_ecoul3mod_mois_n)), color = "black") +
   ggalluvial::geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   facet_wrap(~libelle_bassin, scales = "free_y", ncol = 1) +
