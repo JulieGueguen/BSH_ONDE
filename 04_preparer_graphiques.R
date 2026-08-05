@@ -244,8 +244,14 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
                                 labels = paste0(lab_moisAVoir," \n", c(2012 : lubridate::year(Sys.Date())))) + # 
     ggplot2::theme_light() +
     ggplot2::theme(text = ggplot2::element_text(size = 12),
-                   axis.text = ggplot2::element_text(size = 12))
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.text.x = element_text(angle = if_else(moisAVoir == "09", 45, 0), 
+                                              vjust = 0.5)
+                   )
   
+  # ggsave(filename = paste0(doss_mois,"/output/plot_ecoul_moisAVoir.png"), 
+  #        plot = plot_ecoul_moisAVoir, 
+  #        width = 12, height = 6, device = "png",dpi = 100)
   
   #### Figure 4 : Indice onde suivant les departements campagne de l'anneeAVoir pour toutes
   ## les annees disponibles (2012- now)

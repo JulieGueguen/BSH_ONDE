@@ -446,14 +446,20 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
       code_departement # group_by departement
     )
 
+  # on change l'ordre pour la creation du barplot "plot_ecoul_moisAVoir"
   df_usuel_categ_obs_3mod_region <- onde_mois_usuel %>% 
     prep_data_bilan(
       mod = lib_ecoul3mod,
-      mod_levels = c("Ecoulement visible",
-                     "Ecoulement non visible",
+      # mod_levels = c("Ecoulement visible",
+      #                "Ecoulement non visible",
+      #                "Assec",
+      #                "Observation impossible",
+      #                "Donnée manquante")
+      mod_levels = c("Observation impossible",
+                     "Donnée manquante",
                      "Assec",
-                     "Observation impossible",
-                     "Donnée manquante")
+                     "Ecoulement non visible",
+                     "Ecoulement visible")
     )
   
 ## attention, les sommes des frequences ne font pas 100 (exple 2012 et 2014)

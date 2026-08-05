@@ -169,6 +169,30 @@ onde_DC_usuelles %>%
 
 ```
 
+## region
+
+```{r}
+
+onde_DC_usuelles %>%
+  mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+      levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
+  count(lib_ecoul3mod, .drop = FALSE) %>%
+  mutate(freq = signif(n / sum(n) *100,3))  %>%
+  flextable() %>%
+  autofit() %>%
+  theme_zebra()
+
+onde_DC_usuelles %>%
+  count(lib_ecoul4mod, .drop = FALSE) %>%
+  mutate(freq = signif(n / sum(n) *100,3))  %>%
+  flextable() %>%
+  autofit() %>%
+  theme_zebra()
+
+```
+
+
+## departements
 
 ```{r}
 
@@ -191,6 +215,51 @@ as.data.frame.matrix() %>%
   theme_zebra()
 
 
+```
+
+```{r}
+
+pourc_ecoul_dpt <- onde_DC_usuelles %>%
+  mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+      levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
+  group_by(code_departement) %>%
+  count(lib_ecoul3mod, .drop = FALSE) %>%
+  mutate(freq = signif(n / sum(n) *100,3))
+
+pourc_ecoul_dpt %>%
+  flextable::flextable()
+
+pourc_ecoul_dpt %>%
+  filter(lib_ecoul3mod == "Assec") %>%
+  arrange(freq) %>%
+  flextable::flextable()
+
+
+deficite_normal_dpt <- onde_DC_usuelles %>%
+  mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+                                levels = c("Assec", "Ecoulement non visible", 
+                                           "Ecoulement visible", "Donnée manquante"))) %>%
+  mutate(lib_ecoul3mod = forcats::fct_collapse(lib_ecoul3mod, 
+                                               deficit = c("Assec","Ecoulement non visible"))) %>% 
+  group_by(code_departement) %>%
+  count(lib_ecoul3mod, .drop = FALSE) %>%
+  mutate(freq = n / sum(n) *100)
+
+deficite_normal_dpt %>%
+  arrange(freq) %>%
+  flextable::flextable()
+
+deficite_normal_dpt %>%
+  filter(lib_ecoul3mod == "deficit") %>%
+  arrange(freq) %>%
+  flextable::flextable()
+
+  
+```
+
+```{r}
+
+
 table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
 as.data.frame.matrix() %>%
   rownames_to_column("libellé écoulement") %>%
@@ -208,6 +277,42 @@ as.data.frame.matrix() %>%
 ## commentaire
 
 # table(onde_DC_usuelles$commentaire_sur_la_campagne, onde_DC_usuelles$code_departement )
+
+```
+
+```{r}
+
+
+pourc_ecoul_bassin <- onde_DC_usuelles %>%
+  mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+      levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
+  group_by(libelle_bassin) %>%
+  count(lib_ecoul3mod, .drop = FALSE) %>%
+  mutate(freq = signif(n / sum(n) *100,3))
+
+pourc_ecoul_bassin %>%
+  flextable::flextable()
+
+
+```
+
+
+```{r}
+
+
+deficite_normal_bassin <- onde_DC_usuelles %>%
+                              mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
+                              levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
+                              mutate(lib_ecoul3mod = forcats::fct_collapse(lib_ecoul3mod, deficit = c("Assec","Ecoulement non visible"))) %>% 
+                              group_by(libelle_bassin) %>%
+                              count(lib_ecoul3mod, .drop = FALSE) %>%
+                              mutate(freq = n / sum(n) *100)
+
+
+deficite_normal_bassin %>%
+  arrange(freq) %>%
+  flextable::flextable()
+
 
 ```
 
@@ -231,8 +336,8 @@ onde_DC_usuelles %>%
 
 ```
 
-
 ```{r}
+
 ## stations assec
 
 onde_DC_usuelles %>%
@@ -265,12 +370,21 @@ ggplot(data_barplot, aes(fill= lib_ecoul3mod,
 plot_ecoul_anneeAVoir
 
 
+```
+
+
+```{r}
+
 bilan_cond_reg_typo_nat
 
 bilan_cond_reg_typo_dep
 
 assecs_consecutifs_reg
 
+```
+
+
+```{r}
 
 ####################
 #### Comparaison inter-annuelle hist + courante
@@ -307,10 +421,19 @@ nb_ecoulement_anneeMois <- onde_mois_usuel %>%
   mutate(freq = n / sum(n) *100)
   
 
+```
+
+```{r}
+
 ## ecoulement et annee pour mois selectionnee
 data_barplot_ecoul_interAnnee <- nb_ecoulement_anneeMois %>%
     dplyr::filter(Mois == moisAVoir) %>% 
     dplyr::ungroup()
+
+```
+
+```{r}
+
 
 ## selection des assec
 data_annee_assec_06 <- data_barplot_ecoul_interAnnee %>%
@@ -335,6 +458,18 @@ ggsave(filename = paste0(doss_mois,"/output/nbAssec_",moisAVoir,"_annees.png"), 
           width = 10, height = 7, device = "png")
 
 fig_nbAssec_O6_an
+
+```
+
+```{r}
+
+nb_ecoulement_anneeMois %>%
+  filter(lib_ecoul3mod == "Ecoulement non visible", Mois == moisAVoir)
+
+```
+
+
+```{r}
 
 ### Nombre d'assec moyen
 
@@ -371,12 +506,18 @@ onde_mois_usuel %>%
   distinct() %>%
   nrow()
 
+
+
+```
+
+```{r}
+
 ## stations en situations deficitaires
 
 deficite_normal_anneeMois <- onde_mois_usuel %>%
                               mutate(lib_ecoul3mod = factor(lib_ecoul3mod, 
                               levels = c("Assec", "Ecoulement non visible", "Ecoulement visible", "Donnée manquante"))) %>%
-                              mutate(lib_ecoul3mod = forcats::fct_collapse(lib_ecoul3mod, A_ENV = c("Assec","Ecoulement non visible"))) %>% 
+                              mutate(lib_ecoul3mod = forcats::fct_collapse(lib_ecoul3mod, deficit = c("Assec","Ecoulement non visible"))) %>% 
                               group_by(Annee, Mois) %>%
                               count(lib_ecoul3mod, .drop = FALSE) %>%
                               mutate(freq = n / sum(n) *100)
@@ -389,12 +530,13 @@ data_barplot_deficit_interAnnee <- deficite_normal_anneeMois %>%
 
 ## selection des assec
 data_annee_assecNonvisible_mois <- data_barplot_deficit_interAnnee %>%
-  filter(lib_ecoul3mod == "A_ENV")  %>%
+  filter(lib_ecoul3mod == "deficit")  %>%
   arrange(n)
 
 data_annee_assecNonvisible_mois
 
-fig_nbdeficit_mois_an <- ggplot2::ggplot(data = data_annee_assecNonvisible_mois, aes(x = reorder(Annee, n), y = n)) +
+fig_nbdeficit_mois_an <- ggplot2::ggplot(data = data_annee_assecNonvisible_mois, 
+                                         aes(x = reorder(Annee, n), y = n)) +
   ggplot2::geom_bar(position = position_dodge(), stat = "identity", fill = "lightblue") +
   ggplot2::labs(x = "Années des campagnes", y = "Nombre de stations",
                   caption = paste0("Données Onde, au ", Sys.Date()),
@@ -411,9 +553,36 @@ fig_nbdeficit_mois_an
 ggsave(filename = paste0(doss_mois,"/output/deficit_",moisAVoir,"_annees.png"), plot = fig_nbdeficit_mois_an, 
           width = 10, height = 7, device = "png")
 
+```
 
+##### Est ce que le nombre d'assec du mois est plus elevé que la moyenne
+
+On pose H0 : µ < moyMois où dans notre cas, la moyenne du mois (moyMois) ce n'est pas une vraie moyenne mais c'est une valeur (test de z-score ou Z-test)
+
+Il y a plusieurs hypothèses à verifier avant <https://www.investopedia.com/terms/z/z-test.asp> :
+
+- Z-tests apply when the standard deviation is known and the sample size is 30 or more.
+
+- Z-scores result from hypothesis tests on normal distribution data.
+
+- T-tests are ideal for small samples when the standard deviation is unknown.
+
+- The central limit theorem supports Z-test reliability with large sample sizes.
+
+
+```{r}
+
+nb_assec_mois_courant <- nb_ecoulement_anneeMois %>%
+                          filter(lib_ecoul3mod == "Assec")
+
+hist(nb_assec_mois_courant$n)
+
+ggpubr::ggqqplot(nb_assec_mois_courant$n)
+
+shapiro.test(nb_assec_mois_courant$n)
 
 ```
+
 
 ### Indices
 
@@ -435,6 +604,58 @@ indice_onde_mois_usuel_mois %>%
 
 ```
 
+```{r}
+
+
+  #### Figure 4 : Indice onde suivant les departements campagne de l'anneeAVoir pour toutes
+  ## les annees disponibles (2012- now)
+  
+  
+  # New facet label names for dose variable
+  dose.labs <- c("Ardennes", "Aube", "Marne",
+                 "Haute-Marne", "Meurthe-et-Moselle", 
+                 "Meuse", "Moselle", "Bas-Rhin",
+                 "Haut-Rhin", "Vosges")
+  names(dose.labs) <- c("08", "10" ,"51", "52", "54", "55", "57", "67", "68", "88")
+  
+  # ancien tableau 2
+  
+  indice_smooth <- ggplot2::ggplot(data_plot_indice_interAnnee, 
+                                   ggplot2::aes(x = Annee, y = indice)) +
+    ggplot2::stat_smooth(  method = "lm",
+                           linewidth = 0.8,color = "#00A244", linetype = "dashed") +
+    ggplot2::geom_path(color = "#56C3EE") +
+    ggplot2::geom_point(shape = 21, color = "black", size = 2,
+                        ggplot2::aes(fill = ifelse(indice == 10 , "10", "B"))) +
+    ggplot2::facet_wrap(~code_departement, ncol = 3, 
+                        labeller = ggplot2::labeller(code_departement = dose.labs)) +
+    # ggplot2::scale_x_date(breaks = "1 year", date_labels = "%Y") + 
+    ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
+                                labels = c(2012 : lubridate::year(Sys.Date()))) + 
+    ggplot2::scale_y_continuous(breaks = c(0,2,4,6,8,10),limits = c(0,10)) +
+    ggplot2::scale_fill_manual(values = c("10" = "#0077B6", "B" = "#48CAE4"), name = "", 
+                               labels = c("Indice = 10", "Indice < 10")) +
+    ggplot2::labs(x = paste0("Années de campagnes ONDE (mois de ", lab_moisAVoir,")"), y = "Valeurs d'indice",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  title = paste0("Notes d'indice pour les départements de la région Grand Est (", lab_moisAVoir," 2012 - ",lubridate::year(Sys.Date()),")")) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = 12),
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
+                   strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
+                   strip.background = ggplot2::element_rect(fill = "white"),
+                   legend.box = "vertical",
+                   legend.position = c(0.5, 0.05))
+  
+
+ggsave(filename = paste0(doss_mois,"/output/indice_smooth_",moisAVoir,"_annees.png"), 
+       plot = indice_smooth, 
+       width = 10, height = 6, device = "png",dpi = 100)
+
+```
+
+
+
 Calcul des médianes et moyennes des notes d'indices du mois par département : 2012 - `r max(indice_onde_mois_usuel_mois$Annee)`
 
 
@@ -443,7 +664,8 @@ Calcul des médianes et moyennes des notes d'indices du mois par département : 
 indice_onde_mois_usuel_mois %>%
   group_by(code_departement, Mois) %>%
   summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE), 
-            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE)) %>%
+            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE),
+            ecartType = sd(indice, na.rm = TRUE),) %>%
   filter(Mois == moisAVoir) %>%
 # attention, le cbind ne marche que si on a tous les dept !
   # cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
@@ -461,12 +683,66 @@ indice_onde_mois_usuel_mois %>%
   filter(Annee != anneeAVoir) %>%
   group_by(code_departement, Mois) %>%
   summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE),
-            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE))  %>%
+            mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE),
+            ecartType = sd(indice, na.rm = TRUE),)  %>%
   filter(Mois == moisAVoir) %>%
 # attention, le cbind ne marche que si on a tous les dept !
   # cbind(indice2024 = indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(indice))
   left_join(., indice_onde_mois_usuel_mois %>% filter(Annee == anneeAVoir, Mois == moisAVoir) %>% select(code_departement, indice))
 
+
+```
+
+
+Comparaison indices par annee pour tous les mois et tous les departements. L'idee du graphique sur le site de onde.
+Par contre, si on met toutes les chroniques ça sera probalbmenent illisible...
+
+```{r}
+
+# mettre max 3 annees + celle qu'on veut comparer sinon on voit rien
+fun_comparaison_mois_annee_indice <- function(vect_annee){
+  
+  # https://www.datanovia.com/learn/data-visualization/ggplot2/colors
+  # Okabe-Ito colourblind-safe palette (a ready-made vector — first three values here)
+  cbp <- c("#E69F00", "#56B4E9", "#009E73", "#CC79A7",
+           "#0072B2", "#D55E00", "#999999", "#F0E442")
+  # sinon utiliser direct scale_colour_viridis_d
+  
+  indice_onde_mois_usuel_mois %>%
+              filter(Annee %in% vect_annee) %>%
+              mutate(Annee = as.factor(Annee)) %>%
+  ggplot2::ggplot(., ggplot2::aes(x = Mois, y = indice, 
+                             group = Annee, color = Annee)) +
+    ggplot2::geom_line(linewidth = 0.5) +
+    ggplot2::geom_point(size = 2) +
+    # ggplot2::scale_colour_viridis_d(end = 0.85) +
+    ggplot2::scale_color_manual(values = cbp) +
+    scale_x_discrete(labels = c("Mai", "Juin"," Juillet","Août", "Septembre")) +
+    ggplot2::facet_wrap(~code_departement, ncol = 3, 
+                        labeller = ggplot2::labeller(code_departement = dose.labs))
+
+}
+
+indice_compare <- fun_comparaison_mois_annee_indice(c(2012, 2021, 2022, 2026))
+
+indice_compare_text <- indice_compare +
+    ggplot2::labs(x = "Mois des campagnes usuelles ONDE", y = "Valeurs d'indice",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  color = "Années selectionnées", # titre de legende
+                  title = paste0("Comparaison intra départementale des notes d'indice pour les départements \nde la région Grand Est pour une selection d'années (", paste(c(2012, 2018, 2022, 2026), collapse = ", "), ")")) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = 12),
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.text.x = ggplot2::element_text(angle = 0, vjust = 0.5),
+                   strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
+                   strip.background = ggplot2::element_rect(fill = "white"),
+                   legend.box = "vertical",
+                   legend.position = c(0.5, 0.10))
+indice_compare_text
+
+ggsave(filename = paste0(doss_mois,"/output/indice_compare_annees.png"), 
+       plot = indice_compare_text, 
+       width = 11, height = 7, device = "png",dpi = 100)
 
 ```
 
@@ -480,6 +756,12 @@ Nombre de stations pire, mieux et egales
 
 TODO : avec les bassins
 
+:::callout-warning
+
+Dans la pré-analyse on utilise les 4 modalités alors que dans le rapport BSH ont utilise uniquement les 3 modalités.
+Donc on va avoir des différences en terme de quantifications des évolutions.
+
+:::
 
 ```{r}
 
@@ -500,6 +782,7 @@ evol_m_m_1 <- onde_mois_usuel %>%
 tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois, 
                               values_from = lib_ecoul4mod_num, values_fill = NA) %>%
           # les noms des colonnes vont changer en fonction des mois donc il nous faut un truc un peu generique
+          # attention ! pb pour le mois de mai !!
             rename_at(ncol(.) - 1, ~ "mois_n_moins_1") %>%
             rename_at(ncol(.), ~ "mois_n") %>%
             mutate(mois_n_moins_1 = as.numeric(mois_n_moins_1),
@@ -569,6 +852,17 @@ ggplot(data = zaza,
   geom_stratum() +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   theme_minimal()
+
+```
+
+Si on regarde uniquement les cas qui  ont baissés :
+
+```{r}
+
+data_alluvial %>%
+  filter(evolution == "Baisse")  %>%
+  flextable() %>%
+  autofit() 
 
 ```
 
@@ -647,10 +941,14 @@ ggsave(filename = paste0(doss_mois,"/output/alluvial_",moisAVoir,"_",anneeAVoir,
 
 ```
 
+:::callout-warning
+
+Si on est en mai, il n'y a pas de mois usuel avant, donc problème pour la selection des données !
+
+:::
 
 
-
-```{r}
+```{r, eval=FALSE}
 
 
 # comparaison avec le mois precedent 
@@ -716,7 +1014,7 @@ Le but maintenant est de faire une carte avec les fleches et la couleur est la v
 
 [https://fontawesome.com/icons/arrow-down?f=classic&s=solid](https://fontawesome.com/icons/arrow-down?f=classic&s=solid)
 
-```{r}
+```{r, eval=FALSE}
 
 tab_mois_courant_evolution <- tab_mois_courant_evolution %>%
                                 mutate(icon_evol = case_when(
@@ -728,7 +1026,7 @@ tab_mois_courant_evolution <- tab_mois_courant_evolution %>%
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 
 geom_GE <- COGiter::departements_metro_geo %>%
   dplyr::filter(DEP %in% conf_dep) %>%
@@ -737,7 +1035,7 @@ geom_GE <- COGiter::departements_metro_geo %>%
 
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 
 tab_mois_courant_evolution_sf <- tab_mois_courant_evolution %>% 
   sf::st_as_sf(coords = c("longitude", "latitude"), crs = 4326)
@@ -762,44 +1060,7 @@ ggplot(tab_mois_courant_evolution_sf) +
 
 :::callout::warning
 
-Il y a des différences de sens de fléches avec le BSE de la dreal !! Et pas forcement toutes inversées.
+Il y a des différences de sens de fléches avec le BSE de la dreal !! Et pas forcement toutes inversées !!!
 
 :::
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

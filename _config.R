@@ -4,7 +4,7 @@
 #
 # Date de creation : 13/06/24
 # 
-# Date de modification : 02/07/25
+# Date de modification : 08/10/25
 #
 # Nom du script : _config.R
 #
@@ -24,13 +24,13 @@ if (!require("tidyverse", character.only = TRUE)) {
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "08" 
-lab_moisAVoir <-  "Aout"
-anneeAVoir <- "2025"
+moisAVoir <-  "07" 
+lab_moisAVoir <-  "Juillet"
+anneeAVoir <- "2026"
 
 ## configuration variables donnees
 
-conf_titre <- "Bulletin de Surveillance Hydrologique (BSH) pour la région Grand-Est"
+conf_titre <- "Bulletin de Surveillance Hydrologique (BSH) pour la région Grand Est"
 
 conf_auteur <- "Julie Guéguen"
 
@@ -43,9 +43,12 @@ conf_reg <- 44  # Grand-Est
 # conf_selection_mois <- c("05", "06", "07", "08", "09")
 
 # pour forcer la mise à jour
-forcer <- TRUE # FALSE
+forcer <- TRUE
 # attention, si on ne force pas la mise à jour et qu'il y a une modification des données, il faudrait que
 # la date de mise à jour soit indiquée
+# attention, on retelecharge TOUTES les données à chaque fois, c'est vraiment pas écolo !
+# TODO : changer pour telecharger uniquement les dernieres données et utiliser ce qui a été enregistré 
+# la fois precedente
 
 ##########################
 ## configuration auto
@@ -91,3 +94,4 @@ dossier <- here::here(paste0("./../",anneeAVoir,"/",lab_moisAVoir,"/"))
 
 # dossier d'enregistrement de la compilation des données onde
 doss_engt_onde_hist <- "./../"
+

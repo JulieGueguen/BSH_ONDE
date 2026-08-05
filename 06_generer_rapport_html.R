@@ -4,9 +4,9 @@
 #
 # Date de creation : -
 # 
-# Date de modification : 19/08/24
+# Date de modification : 30/07/2026
 #
-# Nom du script : .R
+# Nom du script : 06_generer_rapport_html.R
 #
 # Description : 
 #
@@ -20,54 +20,26 @@
 #
 # ------------------------------------
 
-
 source("_config.R")
 
-# load(paste0(doss_mois,"/output/graphiques.rda"))
-# load(paste0(doss_mois,"/data/donnees_generales.rda"))
+quarto::quarto_render("./assets/template_BSH3.qmd",
+                      output_file = paste0("BSH_",anneeAVoir, moisAVoir,"_a_completer",".docx"),
+                      output_format = "docx",
+                      execute_dir = doss_mois,
+                      execute_params = list(
+                        annee_campagne = anneeAVoir,
+                        mois_campagne = moisAVoir,
+                        region_dr =  "Grand-Est",
+                        doss_mois = dossier,
+                        conf_dep = conf_dep
+                      ),
+                      quiet = FALSE)
 
-rmarkdown::render("./assets/template_BSH3.qmd",
-                  output_file = paste0("BSH_",anneeAVoir,moisAVoir,"_a_completer",".docx"),
-                  output_dir = doss_mois,
-                  params = list(
-                    annee_campagne = anneeAVoir,
-                    mois_campagne = lab_moisAVoir,
-                    region_dr =  "Grand-Est",
-                    doss_mois = dossier
-                  ),
-                  quiet = TRUE)
-
-# donnees_onde <- read.csv(
-#   file = paste0(doss_engt_onde_hist, "onde.csv"),
-#   colClasses = "character"
-# ) %>%
-#   dplyr::filter(!is.na(code_station)) %>%
-#   dplyr::mutate(
-#     date_campagne = lubridate::as_date(date_campagne, format = "%Y-%m-%d")
-#   ) %>%
-#   dplyr::group_by(code_station) %>%
-#   dplyr::mutate(onde_plus = sum(libelle_type_campagne == "usuelle") == 0) %>%
-#   dplyr::ungroup()
-# 
-# rmarkdown::render("./assets/skeleton_DR.Rmd",
-#                   output_file = paste0("BSH_",anneeAVoir,moisAVoir,"_a_completer_V2",".docx"),
-#                   output_dir = doss_mois,
-#                   params = list(
-#                     doss_engt_onde_hist = doss_engt_onde_hist,
-#                     annee_mois = "2024_06",
-#                     onde_df2 = donnees_onde,
-#                     code_region = conf_reg,
-#                     codes_dpt = conf_dep,
-#                     annee_rapport = anneeAVoir,
-#                     mois_rapport = moisAVoir,
-#                     region_dr = "Grand-Est",
-#                     type_rapport = "usuelle"
-#                   ),
-#                   quiet = FALSE)
-
-# produire_rapport_mensuel_dpt(onde_df = donnees_onde,
-#                              code_departement = c('14', '27', '76'),
-#                              annee_mois = "2024_05",
-#                              region_dr = 'Grand-Est',
-#                              complementaire = F,
-#                              dossier_sortie = "./OUTPUT")
+# rem : quarto_render n'a pas de parametre output_dir. On va donc redeplacer le fichier.
+fs::file_move(paste0("./assets/BSH_",anneeAVoir, moisAVoir,"_a_completer",".docx"), doss_mois)
+# il faut aussi deplacer le dossier associé a l'html, attention, il y a des dossiers imbriqués !!
+# move the file to the output path
+current_folder <- "./assets/template_BSH3_files/"
+new_folder <- here::here(doss_mois,"/template_BSH3_files/")
+fs::dir_copy(current_folder, new_folder,overwrite = TRUE)
+fs::dir_delete(current_folder)
