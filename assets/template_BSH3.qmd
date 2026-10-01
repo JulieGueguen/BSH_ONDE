@@ -91,8 +91,8 @@ nbBassin <- table(onde_DC_usuelles$libelle_bassin)
 
 ###
 
-couleur_ecoulement <- c("Assec" = "#d3313f", "Ecoulement visible" = "#269ed2",
-                        "Ecoulement non visible" = "#ef8b36", "Observations manquantes" = "#b6b7b8")
+couleur_ecoulement <- c("Assec" = "#d73027", "Ecoulement visible" = "#269ed2",
+                        "Ecoulement non visible" = "#fe9929", "Observations manquantes" = "#b6b7b8")
 
 couleurs_ecoulement_4mod <- c(
     "Ecoulement visible acceptable" = "#4575b4",
@@ -137,6 +137,26 @@ my_theme <- function(x, ...) {
 }
 # my_theme(ft)
 
+my_theme_2 <- function(x, ...) {
+  
+      std_border <- officer::fp_border(width = 1, color = "black")
+
+    x <- x %>%
+      flextable::colformat_double(big.mark = "'", decimal.mark = ",", digits = 1) %>%
+      flextable::set_table_properties(layout = "fixed") %>%
+
+      flextable::theme_vanilla() %>%
+      flextable::bg(i = ~ Lib_ecoul == "Assec", j = 1, bg = "#d73027", part = "body") %>%
+      flextable::bg(i = ~ Lib_ecoul == "Ecoulement non visible", j = 1, bg = "#fe9929", part = "body") %>%
+      flextable::bg(i = ~ Lib_ecoul == "Ecoulement visible", j = 1, bg = "#4575b4", part = "body") %>%
+      flextable::border_outer(part="all", border = std_border ) %>%
+      flextable::border_inner_h(border = std_border, part="all") %>%
+      flextable::border_inner_v(border = std_border, part="all") %>%
+      flextable::align(align = "center", part = "all") #%>%
+      # autofit()
+    return(x)
+} 
+
 # palette OFB
 ## https://coolors.co/palette/202e55-337bc8-51c0ed-7dd1f5-256d23-2aa028-7dbb4c-9dc763
 # 
@@ -148,7 +168,7 @@ my_theme <- function(x, ...) {
 ::: justify
 # INTRODUCTION
 
-L’Office français de la biodiversité (OFB) présente dans les Bulletins de Situation Hydrologique de bassin les observations collectées dans le cadre de l’Observatoire National Des Etiages (ONDE), qui vise à apporter de l’information sur l’évolution quantitative des ressources en eau sur des secteurs où le réseau de suivi traditionnel est moins dense.
+L’Office français de la biodiversité (OFB) présente dans les Bulletins de Situation Hydrologique de bassin, les observations collectées dans le cadre de l’Observatoire National Des Etiages (ONDE), qui vise à apporter de l’information sur l’évolution quantitative des ressources en eau sur des secteurs où le réseau de suivi traditionnel est moins dense.
 
 S’il y a lieu, des éléments sur les conséquences des conditions hydro-climatiques remarquables sur les habitats et le fonctionnement des milieux aquatiques sont également présentés.
 
@@ -234,7 +254,7 @@ carte <- ggplot(onde_DC_usuelles_sf) +
 
 ```
 
-```{r carte, fig.width=10, fig.height=6}
+```{r , fig.width=10, fig.height=6}
 #| label: fig-carto
 #| fig-cap: !expr (glue::glue("Carte des situations d'écoulements pour la région Grand Est - Campagne usuelle ", mois_annee_lab))
 #| fig-cap-location: bottom
@@ -248,7 +268,7 @@ carte
 
 Le contexte hydrique du mois de `r mois_campagne_lib`
 
-```{r fig2, fig.width=10, fig.height=6}
+```{r, fig.width=10, fig.height=6}
 #| label: fig-plotecoulement
 #| fig-cap: !expr paste0("Diagramme présentant les situations d'écoulement pour la région Grand Est - Campagne usuelle ", mois_annee_lab)
 #| fig-cap-location: bottom
@@ -295,13 +315,22 @@ table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$code_departement)  %>%
   rownames_to_column("Lib_ecoul") %>%
   flextable::flextable() %>%
   flextable::autofit() %>%
-  flextable::my_theme() %>%
+  my_theme_2() %>%
   flextable::set_caption(caption = paste0("Modalités Onde en fonction des départements du Grand Est - Campagne usuelle  ", mois_annee_lab)) %>%
   flextable::set_header_labels(Lib_ecoul = "Libellé écoulement")
 
 ```
 
 --- separation tableaux ---
+
+::: {.callout-tip}
+# Quelques informations départementales complémentaires
+
+- fksfsdfsd
+
+- fsdfsdf
+
+:::
 
 
 ### Bassins
@@ -317,7 +346,8 @@ table(onde_DC_usuelles$lib_ecoul3mod, onde_DC_usuelles$libelle_bassin) %>%
   arrange(Lib_ecoul) %>%
   flextable::flextable() %>%
   flextable::autofit() %>%
-  flextable::my_theme() %>%
+  # flextable::my_theme() %>%
+  my_theme_2() %>%
   flextable::set_caption(caption = paste0("Modalités Onde en fonction des bassins hydrographiques du Grand Est - Campagne usuelle  ", mois_annee_lab)) %>%
   flextable::set_header_labels(Lib_ecoul = "Libellé écoulement")
 
@@ -347,11 +377,14 @@ onde_DC_usuelles %>%
   pivot_wider(names_from = libelle_bassin,
               values_from = c(pourc), values_fill = 0) %>%
   select(lib_ecoul3mod, `Rhin-Meuse`,	`Rhône-Méditerranée`,	`Seine-Normandie`) %>%
-    flextable() %>%
-    autofit() %>%
-    my_theme() %>%
-    set_caption(caption = paste0("Pourcentage des modalités Onde en fonction des bassins hydrographiques du Grand Est - Campagne usuelle  ", mois_annee_lab))  %>%
-  set_header_labels(lib_ecoul3mod = "Libellé écoulement")
+  rename(Lib_ecoul = lib_ecoul3mod) %>% # pour utiliser my_theme_2()
+  arrange(Lib_ecoul) %>%
+  flextable::flextable() %>%
+  flextable::autofit() %>%
+  # my_theme() %>%
+  my_theme_2() %>%
+  flextable::set_caption(caption = paste0("Pourcentage des modalités Onde en fonction des bassins hydrographiques du Grand Est - Campagne usuelle  ", mois_annee_lab))  %>%
+  flextable::set_header_labels(Lib_ecoul = "Libellé écoulement")
 
 
 ```
@@ -376,9 +409,10 @@ onde_DC_usuelles %>%
       pourcentage_deficit = round(n_deficit / n_donnees * 100, digits = 2),
       # taille_point = sqrt(pourcentage_assecs)
     ) %>%
-    flextable() %>%
-    autofit() %>%
-    my_theme()  %>%
+  flextable() %>%
+  autofit() %>%
+  my_theme()  %>%
+  # my_theme_2() %>%
   set_header_labels(libelle_bassin = "Bassin",
                     n_donnees = "Nombre de stations",
                     n_deficit = "Nombre de stations en déficit",
@@ -441,6 +475,8 @@ tab_mois_courant_evolution <- pivot_wider(evol_m_m_1, names_from = Mois,
                                                                           "Ecoulement non visible" = "2",
                                                                           "Ecoulement visible" = "3"))
 
+write.csv2(x = tab_mois_courant_evolution, file = here::here("tab_mois_courant_evolution.csv"))
+
 ```
 
 
@@ -460,18 +496,22 @@ Les classes d'écoulement nationales sont utilisées ici pour déterminer l'évo
 --- Ligne à effacer - separation tableaux ---
 
 
-Remarque JLO : Pas pertinent car non relié avec les modalités d'écoulements
-
 ```{r}
 #| label: tbl-tab5
 #| tbl-cap: !expr paste0("Evolution de l'écoulement par rapport au mois précédent - Campagne usuelle  ", mois_annee_lab)
 #| tbl-cap-location: top
+#| eval: false
+
+# Remarque JLO : Pas pertinent car non relié avec les modalités d'écoulements
+
+
 tab_mois_courant_evolution %>%
   group_by(evolution) %>%
   summarize(Nb = n(), pourc = Nb/sum(Nb)) %>%
-    flextable() %>%
-    autofit() %>%
-    my_theme() %>%
+  flextable::flextable() %>%
+  flextable::autofit() %>%
+  my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent - Campagne usuelle  ", mois_annee_lab))  %>%
   set_header_labels(evolution = "Evolution",
                     Nb = "Nombre de stations", pourc = "Pourcentage (%)")
@@ -487,23 +527,26 @@ tab_mois_courant_evolution %>%
   group_by(evolution,lib_ecoul3mod_mois_n) %>%
   summarize(Nb = n(), .groups = "drop") %>%
   pivot_wider(names_from = lib_ecoul3mod_mois_n, values_from = Nb,values_fill = 0) %>%
-    flextable() %>%
-    autofit() %>%
-    my_theme() %>%
+  flextable::flextable() %>%
+  flextable::autofit() %>%
+  my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent - Campagne usuelle  ", mois_annee_lab))  %>%
   set_header_labels(evolution = "Evolution",
                     Nb = "Nombre de stations", pourc = "Pourcentage (%)")
 
 ```
 
-```{r}
 
+```{r}
+#| eval: false
 tab_mois_courant_evolution %>%
-  select(lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n ) %>%
+  select(lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n) %>%
   group_by(lib_ecoul3mod_mois_n_moins_1, lib_ecoul3mod_mois_n ) %>%
   count() %>%
-  pivot_wider(names_from = lib_ecoul3mod_mois_n, values_from = n,values_fill = 0)
-
+  pivot_wider(names_from = lib_ecoul3mod_mois_n, values_from = n,values_fill = 0) %>%
+  flextable::flextable() %>%
+  flextable::autofit() 
 
 ```
 
@@ -516,19 +559,24 @@ ezaezaeza
 #| label: tbl-tab6
 #| tbl-cap: !expr paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des départements - Campagne usuelle  ", mois_annee_lab)
 #| tbl-cap-location: top
-#| 
+#| eval: false
+
+# Remarque JLO : Pas pertinent car non relié avec les modalités d'écoulements
+
 tab_mois_courant_evolution %>%
   group_by(evolution, code_departement) %>%
   summarize(Nb = n()) %>%
   pivot_wider(names_from = code_departement,
               values_from = c(Nb), values_fill = 0) %>%
-    flextable() %>%
-    autofit() %>%
-    my_theme() %>%
+  flextable() %>%
+  autofit() %>%
+  my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des départements - Campagne usuelle  ", mois_annee_lab))
 
 
 ```
+
 
 
 --- INSERER TEXTE ---
@@ -536,10 +584,16 @@ tab_mois_courant_evolution %>%
 --- separation tableaux ---
 
 
+
 ```{r}
 #| label: tbl-tab7
 #| tbl-cap: !expr paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des bassins - Campagne usuelle  ", mois_annee_lab)
 #| tbl-cap-location: top
+#| eval: false
+
+# Remarque JLO : Pas pertinent car non relié avec les modalités d'écoulements
+# Donc probablement à retirer car si on ajoute les infos des ecoulement alors ça reviens à sankey
+
 tab_mois_courant_evolution %>%
   group_by(evolution, libelle_bassin) %>%
   summarize(Nb = n()) %>%
@@ -548,6 +602,7 @@ tab_mois_courant_evolution %>%
   flextable() %>%
   autofit() %>%
   my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des bassins - Campagne usuelle  ", mois_annee_lab))
 
 ```
@@ -558,8 +613,9 @@ tab_mois_courant_evolution %>%
 
 ```{r}
 #| label: tbl-tab8
-#| tbl-cap: !expr paste0("Evolution de l'écoulement par rapport au mois précédent en fonction des bassins - Campagne usuelle  ", mois_annee_lab)
+#| tbl-cap: !expr paste0("Evolution de l'écoulement (pourcentage) par rapport au mois précédent en fonction des bassins - Campagne usuelle  ", mois_annee_lab)
 #| tbl-cap-location: top
+#| eval: false
 tab_mois_courant_evolution %>%
   group_by(libelle_bassin) %>%
   count(evolution) %>%
@@ -570,6 +626,7 @@ tab_mois_courant_evolution %>%
   flextable() %>%
   autofit() %>%
   my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Evolution en pourcentage de l'écoulement par rapport au mois précédent en fonction des bassins - Campagne usuelle  ", mois_annee_lab))
   # set_header_labels(
   #   evolution = "Evolution",
@@ -580,6 +637,7 @@ tab_mois_courant_evolution %>%
 ```
 
 -- TODO : mettre la carte des evolutions de onde en attendant que j'arrive à avoir ce que je veux --
+Pas pratique car à faire capture par département ! mais surement plus compréhensible que Sankey :-( 
 
 
 ### Diagramme sankey par bassin
@@ -606,11 +664,7 @@ data_alluvial <- tab_mois_courant_evolution %>%
 
 ```
 
-
-
-
 Si on regarde uniquement les cas qui ont baissés :
-
 
 ```{r}
 #| eval: false
@@ -641,7 +695,7 @@ data_alluvial_freq2 <- data_alluvial %>%
 - Les couleurs des flux sont celle des classes d'observations du mois de `r mois_campagne_lib` (n)
 :::
 
-```{r sankey,  fig.width=10, fig.height=12}
+```{r,  fig.width=10, fig.height=12}
 #| label: fig-sanke
 #| fig-cap: !expr paste0("Diagramme des écoulements entre le mois de ",mois_prec_lab," et le mois de ", mois_campagne_lib," - Campagne usuelle ", mois_annee_lab)
 #| fig-cap-location: bottom
@@ -668,10 +722,7 @@ ggplot(data = data_alluvial_freq2,
 
 ```
 
-
 --- INSERER TEXTE ---
-
-
 
 ## Evolution annuelle des indices départementaux d'écoulement
 
@@ -693,23 +744,24 @@ $$ avec :
 
 :::
 
-L'indice (fig-indic) montre des fluctuations comprises entre `r min(indice_onde_DC_usuelles$indice, na.rm = TRUE)` (`r indice_onde_DC_usuelles$code_departement[which.min(indice_onde_DC_usuelles$indice)]`) et `r max(indice_onde_DC_usuelles$indice, na.rm = TRUE)` (`r indice_onde_DC_usuelles$code_departement[which.max(indice_onde_DC_usuelles$indice)]`). `r sum(onde_DC_usuelles$lib_ecoul3mod =="Assec")` stations sont en assecs et impactent donc les notes d'indices.
+L'indice (@tbl-indic) montre des fluctuations comprises entre `r min(indice_onde_DC_usuelles$indice, na.rm = TRUE)` (`r indice_onde_DC_usuelles$code_departement[which.min(indice_onde_DC_usuelles$indice)]`) et `r max(indice_onde_DC_usuelles$indice, na.rm = TRUE)` (`r indice_onde_DC_usuelles$code_departement[which.max(indice_onde_DC_usuelles$indice)]`). `r sum(onde_DC_usuelles$lib_ecoul3mod =="Assec")` stations sont en assecs et impactent donc les notes d'indices.
 
 
 --- INSERER TEXTE description notes indices ---
 
-```{r indice, fig.width=10, fig.height=6}
+```{r, fig.width=10, fig.height=6}
 #| label: tbl-indic
-#| tbl-cap: !expr paste0("Notes d'indices pour la région Grand Est - Campagne usuelle ", mois_annee_lab)
+#| tbl-cap: !expr paste0("Notes d'indices Onde par département pour la région Grand Est - Campagne usuelle ", mois_annee_lab)
 #| tbl-cap-location: bottom
 indice_onde_DC_usuelles %>%
   select(code_departement, nb_sta, indice) %>%
   merge(info_dept, .,by = "code_departement") %>%
   flextable() %>%
   set_header_labels(values = c("Code département","Nom département", 
-  "Région", "Nombre de stations", "Note d'indice Onde")) %>%
+  "Region","Nombre de stations", "Note d'indice Onde")) %>%
   autofit() %>%
   my_theme() %>%
+  # my_theme_2() %>%
   set_caption(caption = paste0("Notes des indices Onde en fonction des départements - Campagne usuelle  ", mois_annee_lab))
 
 ```
@@ -722,7 +774,7 @@ La comparaison avec les années précédentes (@fig-ecoulement), semble montrer 
 
 --- INSERER TEXTE ---
 
-```{r fig3, fig.width=12, fig.height=6}
+```{r, fig.width=12, fig.height=6}
 #| label: fig-ecoulement
 #| fig-cap: !expr paste0("Diagramme présentant les situations d'écoulement pour la région Grand Est - Campagnes usuelles ", mois_annee_lab, " 2012 - ", params$annee_campagne)
 #| fig-cap-location: bottom
@@ -746,7 +798,7 @@ remarque : attention, on est toujours sur les mêmes stations !! donc les statio
 ### Indices départementaux
 
 
-```{r fig4, fig.width=10, fig.height=6}
+```{r, fig.width=10, fig.height=6}
 #| label: fig-indiceplot
 #| fig-cap: !expr paste0("Valeurs des indices Ondes en fonctions des années pour la région Grand Est - Campagnes usuelles ", mois_campagne_lib, " 2012 - ", params$annee_campagne)
 #| fig-cap-location: bottom
@@ -756,9 +808,12 @@ plot_indice_moisAVoir
 ```
 
 :::callout-tip
-# Remarque
+# A noter @fig-indiceplot
 
-@fig-indiceplot : Seules les valeurs égales à 10 sont en bleu foncées. Les autres notes, mêmes si très proches de 10 sont en bleu clair.
+- Seules les valeurs égales à 10 sont en bleu foncées. Les autres notes, mêmes si très proches de 10 sont en bleu clair.
+
+- La ligne verte représente la tendance obtenue sur la chronique (droite de régression).
+
 :::
 
 En regardant du côté des notes d'indices :
@@ -770,9 +825,9 @@ Calcul des médianes et moyennes des notes d'indices du mois par département : 
 
 
 :::callout-tip
-# A noter
+# A noter @tbl-mediane
 
-@tbl-mediane : Les calculs des moyennes, écart-type, minimum et maximum des notes d’indice du mois par département sont effectués sur la chronique des mois de `r params$mois_campagne` entre 2012 et `r max(indice_onde_mois_usuel_mois$Annee) - 1`. 
+Les calculs des moyennes, écarts-types, minimums et maximums des notes d’indices du mois par département sont effectués sur la chronique des mois de `r mois_campagne_lib` entre 2012 et `r max(indice_onde_mois_usuel_mois$Annee) - 1`. 
 
 La colonne « Indice » concerne la valeur obtenue en `r mois_annee_lab`.
 
@@ -780,9 +835,9 @@ La colonne « Indice » concerne la valeur obtenue en `r mois_annee_lab`.
 
 --TODO : Ajouter les infos avec les années indice min --
 
-```{r median 2012_2023}
+```{r}
 #| label: tbl-mediane
-#| tbl-cap: !expr paste0("Statistiques des notes d'indices Onde en fonction des départements - Campagne usuelle  ", mois_annee_lab, "et campagne usuelle ",params$mois_campagne," 2012 -", (max(indice_onde_mois_usuel_mois$Annee) - 1))
+#| tbl-cap: !expr paste0("Statistiques des notes d'indices Onde en fonction des départements - Campagne usuelle  ", mois_annee_lab, " et campagne usuelle ",mois_campagne_lib," 2012 -", (max(indice_onde_mois_usuel_mois$Annee) - 1))
 #| tbl-cap-location: top
 #| 
 indice_onde_mois_usuel_mois %>%
@@ -791,7 +846,7 @@ indice_onde_mois_usuel_mois %>%
   summarise(moyenne = mean(indice, na.rm = TRUE), mediane = median(indice, na.rm = TRUE),
             mini = min(indice, na.rm = TRUE), maxi = max(indice, na.rm = TRUE),
             ecart_type = sd(indice, na.rm = TRUE),
-            annee_min = Annee[which.min(indice)])  %>%
+            annee_min = as.character(Annee[which.min(indice)]))  %>%
   filter(Mois == params$mois_campagne) %>%
   left_join(., indice_onde_mois_usuel_mois %>% 
                   filter(Annee == params$annee_campagne, Mois == params$mois_campagne) %>% 
@@ -800,17 +855,93 @@ indice_onde_mois_usuel_mois %>%
   select(code_departement, indice, moyenne, mediane,  mini,  maxi, ecart_type, annee_min) %>%
   flextable::flextable() %>%
   flextable::autofit() %>%
-  # flextable::my_theme() %>%
+  my_theme() %>%
   flextable::set_header_labels(
     code_departement = "Département",
     moyenne = "Moyenne", mediane = "Médiane",
-    indice = "Indice",
+    indice = "Indice", ecart_type = "Ecart-type",
     mini = "Minimum", maxi = "Maximum") %>%
   flextable::color( i = 1, j = 2, color = "orange", part = "header") %>%
   flextable::set_caption(caption = paste0("Statistiques des notes d'indices Onde en fonction des départements - Campagne usuelle  ", mois_annee_lab))
 
 
 ```
+
+
+```{r, fig.width=10, fig.height=7}
+#| label: fig-compare
+#| tbl-cap: !expr paste0("Comparaison intra départementale des notes d'indice pour les départements de la région Grand Est pour une selection d'années")
+#| tbl-cap-location: top
+
+# mettre max 3 annees + celle qu'on veut comparer sinon on voit rien
+fun_comparaison_mois_annee_indice <- function(vect_annee){
+  
+    dose.labs <- c("Ardennes", "Aube", "Marne",
+                 "Haute-Marne", "Meurthe-et-Moselle", 
+                 "Meuse", "Moselle", "Bas-Rhin",
+                 "Haut-Rhin", "Vosges")
+  names(dose.labs) <- c("08", "10" ,"51", "52", "54", "55", "57", "67", "68", "88")
+  ## faudrait plutot mettre avec info_dept
+  
+  # https://www.datanovia.com/learn/data-visualization/ggplot2/colors
+  # Okabe-Ito colourblind-safe palette (a ready-made vector — first three values here)
+  cbp <- c("#E69F00", "#56B4E9", "#009E73", "#CC79A7",
+           "#0072B2", "#D55E00", "#999999", "#F0E442")
+  # sinon utiliser direct scale_colour_viridis_d
+  
+  indice_onde_mois_usuel_mois %>%
+              filter(Annee %in% vect_annee) %>%
+              mutate(Annee = as.factor(Annee)) %>%
+  ggplot2::ggplot(., ggplot2::aes(x = Mois, y = indice, 
+                             group = Annee, color = Annee)) +
+    ggplot2::geom_line(linewidth = 0.5) +
+    ggplot2::geom_point(size = 2) +
+    # ggplot2::scale_colour_viridis_d(end = 0.85) +
+    ggplot2::scale_color_manual(values = cbp) +
+    scale_x_discrete(labels = c("Mai", "Juin"," Juillet","Août", "Septembre")) +
+    ggplot2::facet_wrap(~code_departement, ncol = 3, 
+                        labeller = ggplot2::labeller(code_departement = dose.labs))
+
+}
+
+
+choix_vect <- c(2023:2026)
+
+indice_compare <- fun_comparaison_mois_annee_indice(choix_vect)
+
+indice_compare_text <- indice_compare +
+    ggplot2::labs(x = "Mois des campagnes usuelles ONDE", y = "Valeurs d'indice",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  color = "Années selectionnées", 
+                  title = paste0("Comparaison intra départementale des notes d'indice pour les départements \nde la région Grand Est pour une selection d'années (", paste(choix_vect, collapse = ", "), ")")) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = 12),
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.text.x = ggplot2::element_text(angle = 0, vjust = 0.5),
+                   strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
+                   strip.background = ggplot2::element_rect(fill = "white"),
+                   legend.box = "vertical",
+                   legend.position = c(0.5, 0.10))
+indice_compare_text
+
+ggsave(filename = paste0(params$doss_mois,"/output/indice_compare_text.png"),
+       plot = indice_compare_text,
+       width = 10, height = 8, device = "png",dpi = 100)
+
+```
+
+:::callout-tip
+# A noter
+
+Le graphique ci-dessous illustre la durée des assecs pour les stations de la région sur la période estivale (de mai à septembre inclus).
+
+La durée des assecs pour une station est calculée selon le nombre de mois consécutifs où des observations avec la [*modalité assec*]{custom-style="Assec_style"} est rapportée. La plus grande séquence d'observation en assec est gardée pour le calcul de la durée (rq. *entre observations successives, l'écoulement peut revenir visible*).
+
+Ainsi, les durées en assec peuvent aller de 0 mois (c.à.d. des écoulements toujours visibles et consécutivement observés sur la période estivale) à 5 mois (c.à.d. des assecs toujours observés sur la période estivale). Le pourcentage représenté par chaque classe de durée est calculé pour chaque année d'observation.
+
+:::
+
+
 
 ## Durée des assecs
 
@@ -827,7 +958,7 @@ Ainsi, les durées en assec peuvent aller de 0 mois (c.à.d. des écoulements to
 :::
 
 
-```{r fig5, fig.width=10, fig.height=6}
+```{r, fig.width=10, fig.height=6}
 #| label: fig-duree assec
 #| fig-cap: !expr paste0("Durée des assecs pour la région Grand Est - Campagnes usuelles 2012 - ", params$annee_campagne, "")
 #| fig-cap-location: bottom
@@ -838,7 +969,7 @@ assecs_consecutifs_reg
 
 # CONCLUSION
 
-La prochaine campagne usuelle au lieu autour du 25 / `r params$mois_campagne` /`r params$annee_campagne`.
+La prochaine campagne usuelle au lieu autour du 25 / `r (params$mois_campagne)` /`r params$annee_campagne`.
 
 -- TODO : Mettre des infos sur les vigilances meteo france --
 
@@ -855,7 +986,7 @@ Remarque :
 La lecture, la mise en forme des données,la production des graphiques et du document sont effectués via :
 
 - Le logiciel *R* version 4.4.0 [https://www.r-project.org/](https://www.r-project.org/).
-- Les *packages* suivants :`hubeau`, `ondetools`, `tidyverse`, `ggplot2` et `quarto`.
+- Les *packages* suivants : `hubeau`, `ondetools`, `tidyverse`, `ggplot2`, `sf` et `quarto`.
 - Windows 10 x64
 
 Les fonds de cartes proviennent de *ggspatial* (fond openstreetmap).

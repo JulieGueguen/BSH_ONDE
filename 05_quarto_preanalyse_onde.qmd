@@ -555,6 +555,61 @@ ggsave(filename = paste0(doss_mois,"/output/deficit_",moisAVoir,"_annees.png"), 
 
 ```
 
+
+##### Stations en assec
+
+:::callout-note
+
+En 2026, il y a des stations qui sont passés en assec pour la premiere fois, ça peut être interessant à indiquer. Et cela peut montrer qu'il y a une intensité plus forte que d'hab.
+:::
+
+idée : On peut compter combien de fois la station est en assec et affecter pour quels mois/annee
+
+
+```{r}
+
+nbAssec_stations <- onde_mois_usuel %>%
+  arrange(code_departement, code_station, desc(date_campagne)) %>%
+  group_by(code_station) %>%
+  filter(lib_ecoul3mod == "Assec") %>%
+  summarise(list_annee_mois = paste0(unique(Mois_campagne), collapse = "; "),
+            liste_annee = paste0(unique(Annee), collapse = "; "),
+            nbAssec_station = n()) %>%
+  arrange(desc(nbAssec_station))
+
+```
+
+```{r}
+
+nbAssec_stations %>%
+  filter(liste_annee == "2026")
+
+```
+
+ça pourrait être cool aussi d'avoir pour chaque station la date du premiere assec qu'elle a eu.
+
+```{r}
+
+premier_assec <- onde_mois_usuel %>%
+  arrange(code_departement, code_station, desc(date_campagne)) %>%
+  group_by(code_station) %>%
+  filter(lib_ecoul3mod == "Assec") %>%
+  filter(date_campagne == min(date_campagne))
+
+```
+
+```{r}
+
+premier_assec %>%
+  filter(Annee == 2026)
+
+premier_assec %>%
+  group_by(Annee) %>%
+  summarise(nb_an_assec = n())
+
+```
+
+
 ##### Est ce que le nombre d'assec du mois est plus elevé que la moyenne
 
 On pose H0 : µ < moyMois où dans notre cas, la moyenne du mois (moyMois) ce n'est pas une vraie moyenne mais c'est une valeur (test de z-score ou Z-test)
@@ -618,36 +673,6 @@ indice_onde_mois_usuel_mois %>%
                  "Haut-Rhin", "Vosges")
   names(dose.labs) <- c("08", "10" ,"51", "52", "54", "55", "57", "67", "68", "88")
   
-  # ancien tableau 2
-  
-  indice_smooth <- ggplot2::ggplot(data_plot_indice_interAnnee, 
-                                   ggplot2::aes(x = Annee, y = indice)) +
-    ggplot2::stat_smooth(  method = "lm",
-                           linewidth = 0.8,color = "#00A244", linetype = "dashed") +
-    ggplot2::geom_path(color = "#56C3EE") +
-    ggplot2::geom_point(shape = 21, color = "black", size = 2,
-                        ggplot2::aes(fill = ifelse(indice == 10 , "10", "B"))) +
-    ggplot2::facet_wrap(~code_departement, ncol = 3, 
-                        labeller = ggplot2::labeller(code_departement = dose.labs)) +
-    # ggplot2::scale_x_date(breaks = "1 year", date_labels = "%Y") + 
-    ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
-                                labels = c(2012 : lubridate::year(Sys.Date()))) + 
-    ggplot2::scale_y_continuous(breaks = c(0,2,4,6,8,10),limits = c(0,10)) +
-    ggplot2::scale_fill_manual(values = c("10" = "#0077B6", "B" = "#48CAE4"), name = "", 
-                               labels = c("Indice = 10", "Indice < 10")) +
-    ggplot2::labs(x = paste0("Années de campagnes ONDE (mois de ", lab_moisAVoir,")"), y = "Valeurs d'indice",
-                  caption = paste0("Données Onde, au ", Sys.Date()),
-                  title = paste0("Notes d'indice pour les départements de la région Grand Est (", lab_moisAVoir," 2012 - ",lubridate::year(Sys.Date()),")")) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(text = ggplot2::element_text(size = 12),
-                   axis.text = ggplot2::element_text(size = 12),
-                   axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
-                   strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
-                   strip.background = ggplot2::element_rect(fill = "white"),
-                   legend.box = "vertical",
-                   legend.position = c(0.5, 0.05))
-  
-
 ggsave(filename = paste0(doss_mois,"/output/indice_smooth_",moisAVoir,"_annees.png"), 
        plot = indice_smooth, 
        width = 10, height = 6, device = "png",dpi = 100)
@@ -702,6 +727,12 @@ Par contre, si on met toutes les chroniques ça sera probalbmenent illisible...
 # mettre max 3 annees + celle qu'on veut comparer sinon on voit rien
 fun_comparaison_mois_annee_indice <- function(vect_annee){
   
+    dose.labs <- c("Ardennes", "Aube", "Marne",
+                 "Haute-Marne", "Meurthe-et-Moselle", 
+                 "Meuse", "Moselle", "Bas-Rhin",
+                 "Haut-Rhin", "Vosges")
+  names(dose.labs) <- c("08", "10" ,"51", "52", "54", "55", "57", "67", "68", "88")
+  
   # https://www.datanovia.com/learn/data-visualization/ggplot2/colors
   # Okabe-Ito colourblind-safe palette (a ready-made vector — first three values here)
   cbp <- c("#E69F00", "#56B4E9", "#009E73", "#CC79A7",
@@ -723,7 +754,7 @@ fun_comparaison_mois_annee_indice <- function(vect_annee){
 
 }
 
-indice_compare <- fun_comparaison_mois_annee_indice(c(2012, 2021, 2022, 2026))
+indice_compare <- fun_comparaison_mois_annee_indice(c(2023:2026))
 
 indice_compare_text <- indice_compare +
     ggplot2::labs(x = "Mois des campagnes usuelles ONDE", y = "Valeurs d'indice",

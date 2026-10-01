@@ -4,7 +4,7 @@
 #
 # Date de creation : 13/06/24
 # 
-# Date de modification : 08/10/25
+# Date de modification : 28/09/2026
 #
 # Nom du script : _config.R
 #
@@ -24,8 +24,8 @@ if (!require("tidyverse", character.only = TRUE)) {
 ##########################
 ## configuration manuelle
 
-moisAVoir <-  "07" 
-lab_moisAVoir <-  "Juillet"
+moisAVoir <-  "09" 
+lab_moisAVoir <-  "Septembre"
 anneeAVoir <- "2026"
 
 ## configuration variables donnees
@@ -42,13 +42,14 @@ conf_reg <- 44  # Grand-Est
 # conf_libelle_type_campagne <- "usuelle"
 # conf_selection_mois <- c("05", "06", "07", "08", "09")
 
-# pour forcer la mise à jour
+# pour forcer la mise à jour ou pas
 forcer <- TRUE
 # attention, si on ne force pas la mise à jour et qu'il y a une modification des données, il faudrait que
-# la date de mise à jour soit indiquée
+# la date de mise à jour soit indiquée ! 
 # attention, on retelecharge TOUTES les données à chaque fois, c'est vraiment pas écolo !
 # TODO : changer pour telecharger uniquement les dernieres données et utiliser ce qui a été enregistré 
-# la fois precedente
+# la fois precedente et prise en compte des modifications faites sur les données précédentes. 
+# (comment ?? je ne trouve pas la date de modification de la données)
 
 ##########################
 ## configuration auto

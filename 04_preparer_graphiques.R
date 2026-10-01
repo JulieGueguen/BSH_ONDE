@@ -226,7 +226,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     ggplot2::theme(text = ggplot2::element_text(size = 12),
                    axis.text = ggplot2::element_text(size = 12)) +
     ggplot2::scale_x_discrete(labels = paste0(c("Mai", "Juin", "Juillet", "Août", "Septembre"),
-                                              "\n", lubridate::year(Sys.Date())))
+                                              "\n", unique(data_barplot_ecoul_AnneeRecente$Annee)))
   
   #### figure 3 : Situation des ecoulements pour le GE campagne du mois choisi
   # pour toutes les annees (2012- now)
@@ -292,6 +292,34 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
                    legend.position = c(0.5, 0.05))
   
   
+  indice_smooth <- ggplot2::ggplot(data_plot_indice_interAnnee, 
+                                   ggplot2::aes(x = Annee, y = indice)) +
+    ggplot2::stat_smooth(  method = "lm",
+                           linewidth = 0.8,color = "#00A244", linetype = "dashed") +
+    ggplot2::geom_path(color = "#56C3EE") +
+    ggplot2::geom_point(shape = 21, color = "black", size = 2,
+                        ggplot2::aes(fill = ifelse(indice == 10 , "10", "B"))) +
+    ggplot2::facet_wrap(~code_departement, ncol = 3, 
+                        labeller = ggplot2::labeller(code_departement = dose.labs)) +
+    # ggplot2::scale_x_date(breaks = "1 year", date_labels = "%Y") + 
+    ggplot2::scale_x_continuous(breaks  = c(2012 : lubridate::year(Sys.Date())), 
+                                labels = c(2012 : lubridate::year(Sys.Date()))) + 
+    ggplot2::scale_y_continuous(breaks = c(0,2,4,6,8,10),limits = c(0,10)) +
+    ggplot2::scale_fill_manual(values = c("10" = "#0077B6", "B" = "#48CAE4"), name = "", 
+                               labels = c("Indice = 10", "Indice < 10")) +
+    ggplot2::labs(x = paste0("Années de campagnes ONDE (mois de ", lab_moisAVoir,")"), y = "Valeurs d'indice",
+                  caption = paste0("Données Onde, au ", Sys.Date()),
+                  title = paste0("Notes d'indice pour les départements de la région Grand Est (", lab_moisAVoir," 2012 - ",lubridate::year(Sys.Date()),")")) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(text = ggplot2::element_text(size = 12),
+                   axis.text = ggplot2::element_text(size = 12),
+                   axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
+                   strip.text = ggplot2::element_text(size = 12, color = "black", face = "bold"),
+                   strip.background = ggplot2::element_rect(fill = "white"),
+                   legend.box = "vertical",
+                   legend.position = c(0.5, 0.05))
+  
+  
   ## Sauvegarde
   save(
     bilan_cond_reg_typo_nat,
@@ -300,6 +328,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     plot_ecoul_anneeAVoir,
     plot_ecoul_moisAVoir,
     plot_indice_moisAVoir,
+    indice_smooth,
     file = paste0(doss_mois, "/output/graphiques.rda")
   )
   

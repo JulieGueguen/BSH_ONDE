@@ -250,7 +250,8 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   onde_usuelle_manquantes2012_2013 <- onde_usuelle_complete %>%
     # TODO : Choisir une methode plus reproductible !!
     # les donnees qui nous interessent de garder sont :
-    # - les stations code_campagne == NA et les stations prelevees en 2012  pour 2012 et les stations prelevees en 2013 pour 2013
+    # - les stations code_campagne == NA et les stations prelevees en 2012  pour 2012 et
+    # les stations prelevees en 2013 pour 2013
     dplyr::filter(((is.na(code_campagne) & Mois_campagne == "2013-09-01" & code_station %in% stations2013)) |
                     ((is.na(code_campagne) & Mois_campagne == "2012-05-01" & code_station %in% stations2012)))
   
@@ -259,7 +260,9 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
     # TODO : Choisir une methode plus reproductible !!
     dplyr::filter(is.na(code_campagne) & code_station %in% stations2024 & Mois_campagne == "2024-07-01")
   
-  onde_usuelle_all <- dplyr::bind_rows(onde_usuelle_all, onde_usuelle_manquantes2012_2013, onde_usuelle_manquantes_2024) %>%
+  onde_usuelle_all <- dplyr::bind_rows(onde_usuelle_all, 
+                                       onde_usuelle_manquantes2012_2013, 
+                                       onde_usuelle_manquantes_2024) %>%
     dplyr::mutate(Mois = factor(Mois, levels = c("05","06","07","08","09"))) %>%
     dplyr::mutate(libelle_mois = dplyr::case_when(Mois == 5 ~ "mai",
                             Mois == 6 ~ "juin",
@@ -301,9 +304,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   # est proche mais pas la meme (chercher contrexville dans les vosges).
   ## faut clairement une table de transcodage, par contre comment on la gère ? Et la seul possibilité automatique
   # est de remplir. Donc dans l'absolu on aura toujours une difference dans les chiffres.
-  # est ce que la table de transcode pourrait être sur le sandre ? referentiel site hydrometrique non ca y est pas
-  # et en plus y a pas B1200003
-  
+
   ###########################
   ## selection des données usuelles sur toutes les annees Onde (2012 - now)
   # sur les mois entre mai et septembre
@@ -335,7 +336,7 @@ if (to_update | mois_campagneAVoir != mois_campagne_jour) {
   # du package ondetools
   # basé sur les ecoulement departementaux (4 classes) mais ne change pas 
   # si on prend national (3 classes) car on ne detecte que les debut des type d'écoulement
-  # INDICE ONDE= (5*N2+10*N1)/N où  N : nombre total de stations et N1 : écoulement visible
+  # INDICE ONDE = (5*N2+10*N1)/N où  N : nombre total de stations et N1 : écoulement visible
   # N2 : écoulement non visible
   
 #' Title

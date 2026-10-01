@@ -335,7 +335,7 @@ plot_historique <-
   patchwork::plot_annotation(tag_levels = "a",tag_suffix = ')',
                              #title = "Test",
                              caption = paste("Source: réseau ONDE (OFB)\n ©OFB", 
-                                             format(Sys.time(), '%Y'), "- Date d'édition:",format(Sys.time(), '%d/%m/%Y'))) &
+                                             format(Sys.time(), '%Y'), "- Date d'édition:",format(Sys.time(), '%d/%m/%Y'))) %>%
   theme(plot.title = element_text(size = 8, face='bold'),
         plot.tag = element_text(face = 'bold'))
 
